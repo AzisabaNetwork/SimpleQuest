@@ -1,0 +1,44 @@
+# ============================================================
+#  LifeQuest クエスト記法サンプル (wolf_slayer.yml)
+# ============================================================
+WolfSlayer:
+  Title: "&cWolf Slayer"
+  Description:
+    - "&7オオカミを10体討伐しろ！"
+  Icon: "STONE_SWORD:3001"
+  Aura: true
+  Giver: "&e狩人協会"
+  Category: "lq:general"
+  Location: "world,100,64,100"
+
+  Options:
+    MaxParty: 1-4
+    Limits:
+      Daily: 3
+
+  Requirements:
+    PvELevel: 5
+
+  Objectives:
+    KillWolf: 10
+
+  Actions:
+    OnFirstComplete:
+      - Type: MythicItem
+        Params: "WolfFang,5"
+    OnComplete:
+      - Type: Item
+        Params: "minecraft:diamond,3"
+      - Type: PvELevel
+        Params: "30"
+
+  Guides:
+    - Title: "&a森の入り口"
+      Location: "100,64,100"
+      Condition: "KillWolf=1"
+
+  Scripts:
+    OnStart:
+      - "say %player% が Wolf Slayer を開始！"
+    OnComplete:
+      - "broadcast %player% が Wolf Slayer を達成！"

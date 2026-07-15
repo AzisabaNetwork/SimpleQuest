@@ -1,0 +1,8 @@
+name: LifeQuest
+version: 1.0.0-SNAPSHOT
+main: net.azisaba.lifequest.LifeQuest
+loader: net.azisaba.lifequest.LifeQuestBootstrap
+api-version: 1.21
+depend: []
+softdepend:
+  - Kunectron

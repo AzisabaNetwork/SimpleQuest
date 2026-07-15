@@ -1,0 +1,50 @@
+# ============================================================
+#  LifeQuest クエスト記法サンプル (supply_procurement.yml)
+#  エリア侵入トリガー + 課金受注 + アイテム納品 + 複数報酬
+# ============================================================
+SupplyProcurement:
+  Title: "&6備蓄物資調達"
+  Description:
+    - "&7戦時物資庫エリアで発見された依頼"
+    - "&7鉄・金・ダイヤモンドの備蓄が必要だ"
+  Icon: "CHEST:4001"
+  Giver: "&c物資管理官"
+  Category: "lq:general"
+  Location: "world,200,64,200"
+
+  # エリア侵入でクエスト開放
+  Unlock:
+    - EnterArea: "world,150,150,250,250"
+
+  Options:
+    MaxParty: 1-4
+
+  Requirements:
+    PvELevel: 3
+    Money: 100.0
+
+  # 完了条件: 3種類のアイテムを各5個納品
+  Objectives:
+    IronIngot: "minecraft:iron_ingot*5"
+    GoldIngot: "minecraft:gold_ingot*5"
+    Diamond: "minecraft:diamond*5"
+
+  # 報酬アクション
+  Actions:
+    OnFirstComplete:
+      - Type: Item
+        Params: "minecraft:tripwire_hook,1"
+        DisplayName: "&6物資庫の鍵"
+      - Type: Command
+        Params: "lp user %player% parent set supplier"
+    OnComplete:
+      - Type: Item
+        Params: "minecraft:emerald_block,3"
+
+  # スクリプト
+  Scripts:
+    OnStart:
+      - "money take %player% 100"
+      - "say %player% が 備蓄物資調達 を開始！"
+    OnComplete:
+      - "broadcast %player% が備蓄物資調達を完了！物資庫に貢献した。"
