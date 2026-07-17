@@ -1,7 +1,6 @@
 package net.azisaba.lifequest.di
 
 import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlException
 import dagger.Module
 import dagger.Provides
 import jakarta.inject.Singleton
@@ -15,6 +14,7 @@ import java.util.logging.Logger
 
 /**
  * Provides configuration objects for the plugin.
+ * Generates default config.yml if it does not exist.
  */
 @Module
 object ConfigModule {
@@ -25,11 +25,29 @@ object ConfigModule {
         logger: Logger,
     ): LifeQuestConfig {
         val configFile = File(dataFolder, "config.yml")
+
+        // Generate default config if the file does not exist
+        if (!configFile.exists()) {
+            dataFolder.mkdirs()
+            val defaultConfig = LifeQuestConfig()
+            try {
+                val yamlText =
+                    Yaml.default.encodeToString(
+                        LifeQuestConfig.serializer(),
+                        defaultConfig,
+                    )
+                configFile.writeText(yamlText)
+                logger.info("Generated default config.yml")
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Failed to generate default config.yml", e)
+            }
+        }
+
         return try {
             Yaml.default.decodeFromString(LifeQuestConfig.serializer(), configFile.readText())
-        } catch (e: YamlException) {
-            logger.log(Level.SEVERE, "Failed to load config.yml", e)
-            LifeQuestConfig() // fallback
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, "Failed to load config.yml, using defaults", e)
+            LifeQuestConfig()
         }
     }
 
