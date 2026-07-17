@@ -7,6 +7,7 @@ import dagger.Provides
 import jakarta.inject.Singleton
 import net.azisaba.lifequest.data.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.ExposedConnectionImpl
 import javax.sql.DataSource
 
 /**
@@ -35,7 +36,11 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideExposedDatabase(dataSource: HikariDataSource): Database = Database.connect(dataSource)
+    fun provideExposedDatabase(dataSource: HikariDataSource): Database =
+        Database.connect(
+            datasource = dataSource,
+            connectionAutoRegistration = ExposedConnectionImpl(),
+        )
 
     @Provides
     @Singleton

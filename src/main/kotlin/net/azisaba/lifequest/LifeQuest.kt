@@ -72,9 +72,9 @@ class LifeQuest : JavaPlugin() {
     }
 
     override fun onDisable() {
-        backupService.stop()
-        discordWebhook.shutdown()
-        databaseManager.disconnect()
+        if (::backupService.isInitialized) backupService.stop()
+        if (::discordWebhook.isInitialized) discordWebhook.shutdown()
+        if (::databaseManager.isInitialized) databaseManager.disconnect()
         logger.info("LifeQuest disabled.")
     }
 

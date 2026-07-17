@@ -92,6 +92,10 @@ tasks {
         relocate("io.ktor", "net.azisaba.lifequest.shaded.ktor")
         relocate("io.lettuce", "net.azisaba.lifequest.shaded.lettuce")
 
+        // Merge META-INF/services files and relocate class names inside them.
+        // Required for Exposed (DatabaseConnectionAutoRegistration) and Flyway (Java ServiceLoader).
+        mergeServiceFiles()
+
         // Exclude signature files that cause issues in fat JARs
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
     }

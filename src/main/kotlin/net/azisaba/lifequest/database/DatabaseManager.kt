@@ -6,6 +6,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import net.azisaba.lifequest.data.DatabaseConfig
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.ExposedConnectionImpl
 
 @Singleton
 class DatabaseManager
@@ -36,7 +37,13 @@ class DatabaseManager
                     validate()
                 }
             hikari = HikariDataSource(hikariConfig)
-            exposedDb = Database.connect(hikari!!)
+            // Pass ExposedConnectionImpl directly to bypass ServiceLoader.
+            // ServiceLoader can fail in Paper PluginClassLoader when Exposed is relocated.
+            exposedDb =
+                Database.connect(
+                    datasource = hikari!!,
+                    connectionAutoRegistration = ExposedConnectionImpl(),
+                )
             return exposedDb!!
         }
 
