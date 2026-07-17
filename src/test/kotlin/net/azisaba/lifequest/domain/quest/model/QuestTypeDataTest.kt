@@ -148,23 +148,22 @@ class QuestTypeTest :
                 val qt = QuestType(key = "test:result", title = "Test", icon = Icon(type = "STONE"))
                 val quest = createFakeQuest(qt)
                 val result = QuestResult.Success(quest)
-                val q = (result as QuestResult.Success).quest
+                val q = result.quest
                 q.type.key shouldBe "test:result"
             }
 
             test("Failure holds reason") {
                 val result = QuestResult.Failure("Party does not meet requirements")
-                val f = (result as QuestResult.Failure)
-                f.reason shouldBe "Party does not meet requirements"
+                result.reason shouldBe "Party does not meet requirements"
             }
 
             test("Failure with different reasons") {
                 val r1 = QuestResult.Failure("Requirement not met")
                 val r2 = QuestResult.Failure("Limit exceeded")
                 val r3 = QuestResult.Failure("")
-                (r1 as QuestResult.Failure).reason shouldBe "Requirement not met"
-                (r2 as QuestResult.Failure).reason shouldBe "Limit exceeded"
-                (r3 as QuestResult.Failure).reason shouldBe ""
+                r1.reason shouldBe "Requirement not met"
+                r2.reason shouldBe "Limit exceeded"
+                r3.reason shouldBe ""
             }
         }
     })
