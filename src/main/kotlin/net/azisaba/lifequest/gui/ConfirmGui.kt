@@ -1,49 +1,51 @@
+// Original: https://github.com/AzisabaNetwork/quem by tksimeji
+// Adapted for LifeQuest
+
 package net.azisaba.lifequest.gui
 
 import com.tksimeji.kunectron.ChestGui
-import com.tksimeji.kunectron.builder.GuiBuilder
 import com.tksimeji.kunectron.element.Element
+import com.tksimeji.kunectron.element.ItemElement
+import com.tksimeji.kunectron.hooks.ChestGuiHooks
 import net.kyori.adventure.text.Component
-import org.bukkit.Material
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemType
 
-object ConfirmGui {
-    fun open(
-        player: Player,
-        title: String,
-        onAccept: () -> Unit,
-        onReject: () -> Unit = {},
-    ) {
-        GuiBuilder
-            .chest()
-            .size(ChestGui.ChestSize.SIZE_27)
-            .title(Component.text("Confirm"))
-            .build(player)
-            .also { hooks ->
-                // 緑色 (Yes)
-                hooks.useElement(
-                    11,
-                    Element
-                        .item(Material.GREEN_TERRACOTTA)
-                        .title(Component.text("§a§lYes"))
-                        .lore(Component.text("§7$title"), Component.text(""), Component.text("§eClick to confirm"))
-                        .handler { _ ->
-                            player.closeInventory()
-                            onAccept()
-                        },
-                )
-                // 赤色 (No)
-                hooks.useElement(
-                    15,
-                    Element
-                        .item(Material.RED_TERRACOTTA)
-                        .title(Component.text("§c§lNo"))
-                        .lore(Component.text("§7$title"), Component.text(""), Component.text("§eClick to cancel"))
-                        .handler { _ ->
-                            player.closeInventory()
-                            onReject()
-                        },
-                )
-            }
-    }
+@ChestGui
+class ConfirmGui(
+    @ChestGui.Player private val player: Player,
+    onAccept: Runnable?,
+    onReject: Runnable?,
+) : ChestGuiHooks {
+    @ChestGui.Title
+    private val title = Component.text("Confirm")
+
+    @ChestGui.Size
+    private val size = ChestGui.ChestSize.SIZE_27
+
+    @ChestGui.Element(index = [11])
+    private val accept =
+        Element
+            .item(ItemType.GREEN_TERRACOTTA)
+            .title(Component.text("Accept").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD))
+            .handler(
+                ItemElement.Handler1 {
+                    useClose()
+                    onAccept?.run()
+                },
+            )
+
+    @ChestGui.Element(index = [15])
+    private val reject =
+        Element
+            .item(ItemType.RED_TERRACOTTA)
+            .title(Component.text("Reject").color(NamedTextColor.RED).decorate(TextDecoration.BOLD))
+            .handler(
+                ItemElement.Handler1 {
+                    useClose()
+                    onReject?.run()
+                },
+            )
 }

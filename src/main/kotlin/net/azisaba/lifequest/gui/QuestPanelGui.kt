@@ -1,94 +1,126 @@
+// Original: https://github.com/AzisabaNetwork/quem by tksimeji
+// Adapted for LifeQuest
+
 package net.azisaba.lifequest.gui
 
-import com.tksimeji.kunectron.builder.GuiBuilder
+import com.tksimeji.kunectron.ScoreboardGui
+import com.tksimeji.kunectron.event.GuiHandler
+import com.tksimeji.kunectron.event.ScoreboardGuiEvents
 import com.tksimeji.kunectron.hooks.ScoreboardGuiHooks
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
-import net.azisaba.lifequest.data.PanelConfig
+import net.azisaba.lifequest.LifeQuest
 import net.azisaba.lifequest.quest.Quest
-import net.azisaba.lifequest.quest.QuestState
+import net.azisaba.lifequest.stage.Stage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Bukkit
-import org.bukkit.entity.Player
-import org.bukkit.plugin.Plugin
+import net.kyori.adventure.text.format.TextDecoration
 
-/**
- * Manages quest scoreboard panels displayed to players.
- * Injectable via Dagger; legacy static methods provided in companion.
- */
-@Singleton
-class QuestPanelGui
-    @Inject
-    constructor(
-        private val plugin: Plugin,
-        private val panelConfig: PanelConfig,
-    ) {
-        private val activePanels = mutableMapOf<Player, ScoreboardGuiHooks>()
+@ScoreboardGui
+class QuestPanelGui(
+    private val quest: Quest,
+) : ScoreboardGuiHooks {
+    private val party = quest.party
+    private val members = quest.players.toList()
+    private var staged = false
 
-        fun show(
-            player: Player,
-            quest: Quest,
-        ) {
-            val hooks =
-                GuiBuilder
-                    .scoreboard()
-                    .title(Component.text(panelConfig.title))
-                    .line(Component.text(""))
-                    .line(Component.text("§6Progress: §e${quest.type.title}"))
-                    .line(Component.text("  §7${quest.progresses.totalProgress} / ${quest.progresses.totalRequired}"))
-                    .line(Component.text(""))
-                    .line(Component.text("§eParty (${quest.players.size}):"))
-                    .build()
+    @ScoreboardGui.Title
+    private val title = Component.text(LifeQuest.plugin.configData.panel.title)
 
-            quest.players.forEach { member ->
-                val hp = member.health.toInt()
-                val line =
+    @ScoreboardGui.Line(index = 1)
+    private val line2 =
+        Component
+            .text("Active: ")
+            .color(NamedTextColor.GRAY)
+            .append(quest.type.title.let { t -> Component.text(t).color(NamedTextColor.WHITE) })
+
+    @ScoreboardGui.Line(index = 2)
+    private val line3 =
+        Component
+            .text("Progress: ")
+            .color(NamedTextColor.GRAY)
+            .append(Component.text(quest.progresses.totalProgress.toString()).color(NamedTextColor.GREEN))
+            .append(Component.text("/").color(NamedTextColor.DARK_GRAY))
+            .append(Component.text(quest.progresses.totalRequired.toString()).color(NamedTextColor.WHITE))
+
+    @ScoreboardGui.Line(index = 4)
+    private val line5 =
+        Component
+            .text("Party (${quest.players.size}):")
+            .color(NamedTextColor.GRAY)
+
+    @GuiHandler
+    fun onTick(event: ScoreboardGuiEvents.TickEvent) {
+        var index = 5
+
+        for (member in members) {
+            val isPlayer = quest.players.contains(member)
+            val component =
+                Component
+                    .space()
+                    .append(
+                        Component
+                            .text(member.name)
+                            .color(if (isPlayer) NamedTextColor.AQUA else NamedTextColor.RED)
+                            .decoration(
+                                TextDecoration.STRIKETHROUGH,
+                                if (isPlayer) TextDecoration.State.NOT_SET else TextDecoration.State.TRUE,
+                            ),
+                    ).appendSpace()
+                    .append(
+                        when {
+                            isPlayer -> {
+                                val health = member.health.toInt()
+                                val healthColor =
+                                    when {
+                                        health <= 4 -> NamedTextColor.RED
+                                        health <= 8 -> NamedTextColor.GOLD
+                                        else -> NamedTextColor.GREEN
+                                    }
+                                Component
+                                    .text(health)
+                                    .color(healthColor)
+                                    .append(Component.text("\u2665").color(NamedTextColor.RED))
+                            }
+
+                            !party.members.contains(member) && party.leader != member -> {
+                                Component.text("Left").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                            }
+
+                            else -> {
+                                Component.text("Dead").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                            }
+                        },
+                    )
+            useLine(index++, component)
+        }
+
+        index++
+
+        if (staged && party.stage == null) {
+            useRemoveLines()
+            useLine(1, line2)
+            useLine(2, line3)
+            useLine(4, line5)
+        }
+
+        if (party.stage != null) {
+            val stage = party.stage!!
+
+            if (stage is Stage) {
+                useLine(
+                    index,
                     Component
-                        .text()
-                        .append(Component.text("  ", NamedTextColor.GRAY))
-                        .append(Component.text("${member.name} ", NamedTextColor.AQUA))
-                        .append(Component.text("♥$hp", NamedTextColor.RED))
-                        .build()
-                hooks.useAddLine(line)
+                        .text("Stage: ")
+                        .color(NamedTextColor.GRAY)
+                        .append(Component.text(stage.title).color(NamedTextColor.WHITE)),
+                )
             }
 
-            hooks.useAddLine(Component.text(""))
-            hooks.useAddLine(Component.text("§7${quest.type.description.firstOrNull() ?: ""}"))
-            hooks.useAddLine(Component.text(""))
-            hooks.useAddLine(Component.text(panelConfig.footer))
-
-            hooks.useAddPlayer(player)
-            activePanels[player] = hooks
-
-            val taskId =
-                Bukkit
-                    .getScheduler()
-                    .runTaskTimer(
-                        plugin,
-                        Runnable {
-                            if (quest.state != QuestState.ACTIVE) {
-                                hooks.useClose()
-                                activePanels.remove(player)
-                                return@Runnable
-                            }
-                            hooks.useLine(2, Component.text("  §7${quest.progresses.totalProgress} / ${quest.progresses.totalRequired}"))
-                        },
-                        5L,
-                        5L,
-                    ).taskId
-
-            Bukkit.getScheduler().runTaskLater(
-                plugin,
-                Runnable {
-                    Bukkit.getScheduler().cancelTask(taskId)
-                },
-                20L * 60L * 5L,
-            )
+            staged = true
+            index += 2
+        } else {
+            staged = false
         }
 
-        fun hide(player: Player) {
-            activePanels[player]?.useClose()
-            activePanels.remove(player)
-        }
+        useLine(index, Component.text(LifeQuest.plugin.configData.panel.footer))
     }
+}

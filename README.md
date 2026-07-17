@@ -9,13 +9,19 @@
 | **DB** | MariaDB + Exposed + HikariCP |
 | **GUI** | Kunectron (optional) |
 
+> **Original GUI System: [AzisabaNetwork/quem](https://github.com/AzisabaNetwork/quem) by tksimeji**
+>
+> `src/main/kotlin/net/azisaba/lifequest/gui/` 以下の GUI 実装は
+> Quem の Kunectron ベース実装を移植・改変したものです。
+> 各ファイルの先頭にもクレジットを記載しています。
+
 ## クイックスタート
 
 ```bash
 # ビルド
 ./gradlew jar
 
-# テスト (123 tests)
+# テスト (440 tests)
 ./gradlew test
 ```
 

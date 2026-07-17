@@ -1,5 +1,6 @@
 package net.azisaba.lifequest
 
+import com.tksimeji.kunectron.Kunectron
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
@@ -51,8 +52,11 @@ private val lifeQuestCommand =
 
             "quest", "gui" -> {
                 if (sender is Player) {
-                    net.azisaba.lifequest.gui.QuestGui
-                        .open(sender)
+                    Kunectron
+                        .create(
+                            net.azisaba.lifequest.gui
+                                .QuestGui(sender),
+                        )
                 } else {
                     sender.sendMessage(Component.text("§cPlayer only command"))
                 }
@@ -60,8 +64,18 @@ private val lifeQuestCommand =
 
             "party" -> {
                 if (sender is org.bukkit.entity.Player) {
-                    net.azisaba.lifequest.gui.PartyMenuGui
-                        .open(sender)
+                    val party = PartyManager.getParty(sender)
+                    if (party != null) {
+                        Kunectron.create(
+                            net.azisaba.lifequest.gui
+                                .PartyMenuGui(sender, party),
+                        )
+                    } else {
+                        Kunectron.create(
+                            net.azisaba.lifequest.gui
+                                .PartyCreateGui(sender),
+                        )
+                    }
                 } else {
                     sender.sendMessage(Component.text("§cPlayer only command"))
                 }
