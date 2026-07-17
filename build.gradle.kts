@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version libs.versions.kotlin.get()
     kotlin("plugin.serialization") version libs.versions.kotlin.get()
     alias(libs.plugins.ksp)
+    alias(libs.plugins.shadow)
     java
 }
 
@@ -79,6 +80,24 @@ dependencies {
 tasks {
     compileKotlin {
         compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+
+        // Relocate dependencies to avoid conflicts with other plugins
+        relocate("org.jetbrains.exposed", "net.azisaba.lifequest.shaded.exposed")
+        relocate("com.charleskorn.kaml", "net.azisaba.lifequest.shaded.kaml")
+        relocate("org.flywaydb", "net.azisaba.lifequest.shaded.flyway")
+        relocate("io.ktor", "net.azisaba.lifequest.shaded.ktor")
+        relocate("io.lettuce", "net.azisaba.lifequest.shaded.lettuce")
+
+        // Exclude signature files that cause issues in fat JARs
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    }
+
+    build {
+        dependsOn(shadowJar)
     }
 
     test {
