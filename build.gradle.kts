@@ -34,6 +34,8 @@ dependencies {
     // Database
     implementation(libs.hikari)
     implementation(libs.mariadb)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.mysql)
 
     // Redis
     implementation(libs.lettuce.core)
