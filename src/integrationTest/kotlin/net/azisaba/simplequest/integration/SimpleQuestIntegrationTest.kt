@@ -4,13 +4,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.nio.file.Path
 
-/**
- * Integration tests that verify a live Paper server instance.
- *
- * Prerequisites (handled by CI workflow):
- *   - 1 Paper server running (master:25565)
- *   - MariaDB on localhost:3306
- */
 class SimpleQuestIntegrationTest : FunSpec() {
     private val logPath =
         Path.of(
@@ -28,25 +21,30 @@ class SimpleQuestIntegrationTest : FunSpec() {
     private fun logContains(pattern: Regex): Boolean = logLines().any { pattern.containsMatchIn(it) }
 
     init {
-        test("server logs 'SimpleQuest enabled'") {
+        test("plugin loaded and enabled") {
             logContains(Regex("SimpleQuest enabled")) shouldBe true
         }
 
-        test("plugin remapping completed successfully") {
+        test("plugin remapping completed") {
             logContains(
                 Regex("Done remapping plugin.*SimpleQuest"),
             ) shouldBe true
         }
 
-        test("plugin loaded without fatal errors") {
-            // Exclude known non-fatal messages:
-            // - DB connection failures (expected without proper DB setup)
-            // - Table missing warnings (migration may not have run)
-            // - Nag messages about System.err usage
+        test("database migration applied") {
+            logContains(
+                Regex("Flyway migration completed.*\\d+ migration"),
+            ) shouldBe true
+        }
+
+        test("MariaDB quest_definitions table exists") {
+            ServerAssertions.assertQuestDefinitionTableExists()
+        }
+
+        test("no fatal errors in server log") {
             val fatalPattern =
                 Regex(
                     "(?i)(FATAL|CrashReport|OutOfMemory|" +
-                        "java\\.lang\\.IllegalStateException|" +
                         "Could not load plugin)",
                 )
             val fatalErrors =

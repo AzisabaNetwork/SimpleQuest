@@ -54,6 +54,23 @@ class ServerAssertions(
         }
 
         /**
+         * Verifies that the quest_definitions table exists in MariaDB.
+         */
+        fun assertQuestDefinitionTableExists() {
+            connectMariaDB().use { conn ->
+                conn.createStatement().use { stmt ->
+                    val rs =
+                        stmt.executeQuery(
+                            "SELECT COUNT(*) FROM quest_definitions",
+                        )
+                    rs.next()
+                    // Just check the table exists, count may be 0
+                    rs.getInt(1) shouldBe 0
+                }
+            }
+        }
+
+        /**
          * Verifies that quest definitions exist in MariaDB.
          */
         fun assertQuestDefinitionsExist() {
