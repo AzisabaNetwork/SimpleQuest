@@ -15,7 +15,7 @@ jobs:
 
     services:
       mariadb:
-        image: mariadb:11
+        image: mariadb:11@sha256:09336a8c0cff9f363e133d8a245cca5ad3eeb326e0ffaedf74d49214c4571486
         env:
           MARIADB_ROOT_PASSWORD: test
           MARIADB_DATABASE: simplequest
@@ -28,7 +28,7 @@ jobs:
           --health-retries=5
 
       redis:
-        image: redis:7-alpine
+        image: redis:7-alpine@sha256:b1addbe72465a718643cff9e60a58e6df1841e29d6d7d60c9a85d8d72f08d1a7
         ports:
           - 6379:6379
         options: >-
