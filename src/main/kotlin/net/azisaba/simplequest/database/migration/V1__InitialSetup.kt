@@ -1,7 +1,5 @@
 package net.azisaba.simplequest.database.migration
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import net.azisaba.simplequest.database.table.PlayerQuestTypes
 import net.azisaba.simplequest.database.table.QuestCompletions
 import net.azisaba.simplequest.database.table.QuestDefinitions
@@ -11,35 +9,22 @@ import org.flywaydb.core.api.migration.Context
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.migration.jdbc.MigrationUtils
+import javax.sql.DataSource
 
-class V1__InitialSetup : BaseJavaMigration() {
+class V1__InitialSetup(
+    private val dataSource: DataSource,
+) : BaseJavaMigration() {
     override fun migrate(context: Context) {
-        val meta = context.connection.metaData
-        val ds =
-            HikariDataSource(
-                HikariConfig().apply {
-                    jdbcUrl = meta.url
-                    username = meta.userName
-                    driverClassName = "org.mariadb.jdbc.Driver"
-                    maximumPoolSize = 1
-                },
-            )
-        try {
-            val db = Database.connect(ds)
-            transaction(db) {
-                val statements =
-                    MigrationUtils.statementsRequiredForDatabaseMigration(
-                        QuestProgress,
-                        QuestCompletions,
-                        PlayerQuestTypes,
-                        QuestDefinitions,
-                    )
-                statements.forEach { sql: String ->
-                    exec(sql)
-                }
-            }
-        } finally {
-            ds.close()
+        val db = Database.connect(dataSource)
+        transaction(db) {
+            val statements =
+                MigrationUtils.statementsRequiredForDatabaseMigration(
+                    QuestProgress,
+                    QuestCompletions,
+                    PlayerQuestTypes,
+                    QuestDefinitions,
+                )
+            statements.forEach { sql: String -> exec(sql) }
         }
     }
 }

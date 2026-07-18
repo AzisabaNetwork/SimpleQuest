@@ -29,7 +29,7 @@ class MigrationRunner
                     Flyway
                         .configure()
                         .dataSource(dataSource)
-                        .javaMigrations(V1__InitialSetup())
+                        .javaMigrations(V1__InitialSetup(dataSource))
                         .load()
                 val result = flyway.migrate()
                 logger.info("Flyway migration completed: ${result.migrations.size} migration(s) applied.")
