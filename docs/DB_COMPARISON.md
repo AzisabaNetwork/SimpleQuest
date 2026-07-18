@@ -3,7 +3,7 @@
 > **2026-07-14 決定: Exposed を採用。**
 > 本ドキュメントは比較検討時の資料として残してあります。
 >
-> クエストロジックで SQL を多用する LifeQuest の特性を踏まえ、
+> クエストロジックで SQL を多用する SimpleQuest の特性を踏まえ、
 > jdbi (SqlObject) + Flyway と Exposed (DSL/DAO, Migration) を多角的に比較する。
 > メンテコスト・ベンダーリスク・ライセンス・組織適合性を含めて総合評価。
 
@@ -11,7 +11,7 @@
 
 ## 0. 前提: このプロジェクトが SQL を「めっちゃ触る」理由
 
-LifeQuest のデータアクセスパターン:
+SimpleQuest のデータアクセスパターン:
 
 ```
 クエスト定義読み込み     → YAML (kaml)   ← DB ではない
@@ -76,7 +76,7 @@ Exposed は 2025年に v1.0 をリリース。これにより:
 
 ### Flyway Community の制約 (重要度: 低)
 
-LifeQuest に必要な migration 機能:
+SimpleQuest に必要な migration 機能:
 
 | 機能 | Community | Pro | Enterprise |
 |---|---|---|---|
@@ -88,7 +88,7 @@ LifeQuest に必要な migration 機能:
 | Gradle / Maven plugin | ✅ | ✅ | ✅ |
 | Dry run | ❌ | ✅ | ✅ |
 
-**LifeQuest に Undo は不要。** 開発初期のスキーマ変更は「新しい migration ファイルで修正」が標準プラクティス。Community で十分。
+**SimpleQuest に Undo は不要。** 開発初期のスキーマ変更は「新しい migration ファイルで修正」が標準プラクティス。Community で十分。
 
 ---
 
@@ -178,7 +178,7 @@ Exposed (DAO):
 
 ### 実質的なリスク
 
-LifeQuest で使う SQL は `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `COUNT`, `WHERE`, `GROUP BY` が 99%。**ベンダー固有機能に依存するような複雑な SQL はほぼ書かない。** よってベンダーリスクは両者とも低い。
+SimpleQuest で使う SQL は `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `COUNT`, `WHERE`, `GROUP BY` が 99%。**ベンダー固有機能に依存するような複雑な SQL はほぼ書かない。** よってベンダーリスクは両者とも低い。
 
 ---
 
@@ -258,6 +258,6 @@ Flyway を使いたい気持ちがある
   └─ No  → Exposed だけで良い (Flyway 併用はしない)
 ```
 
-LifeQuest の今の状況では **jdbi (SqlObject) + Flyway** がベターだと思います。
+SimpleQuest の今の状況では **jdbi (SqlObject) + Flyway** がベターだと思います。
 
 ただし Exposed を選んでも後悔はしないレベルです。「Exposed 1.x で安定した」「JetBrains 公式」「Kotlin 体験が気持ちいい」という要素も確かにあります。

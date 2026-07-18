@@ -95,7 +95,7 @@ scripts:
 ```yaml
 scripts:
   complete:
-    - ':lifequest grant % lq:example'
+    - ':simplequest grant % lq:example'
 ```
 
 - 先頭 `:` で開始された場合、`quest.players` の各プレイヤーごとにコマンドを繰り返し実行
@@ -113,14 +113,14 @@ scripts:
     - 'broadcast Quest ended'
   complete:
     - ':say % completed the quest!'
-    - ':lifequest grant % namespace:reward'
+    - ':simplequest grant % namespace:reward'
   cancel:
     - ':say % failed the quest...'
 ```
 
 ## アクションシステムとの共存
 
-LifeQuest では以下の使い分けを想定:
+SimpleQuest では以下の使い分けを想定:
 
 | 用途 | 推奨方式 |
 |---|---|

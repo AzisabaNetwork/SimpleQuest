@@ -2,7 +2,7 @@
 
 ## 概要
 
-LifeQuest を複数サーバーで運用する際、クエスト定義 (YAML) とプレイヤーデータを MySQL で一元管理する。
+SimpleQuest を複数サーバーで運用する際、クエスト定義 (YAML) とプレイヤーデータを MySQL で一元管理する。
 サーバーごとに「YAML 書き出し権限」「YAML 読み込み権限」を設定し、コンフリクト検出・解決機構を備える。
 
 ## 設定
@@ -17,7 +17,7 @@ multi-server:
     enabled: true
     interval-hours: 24
     retention-days: 30
-    directory: "plugins/LifeQuest/backups/"
+    directory: "plugins/SimpleQuest/backups/"
 discord:
   webhook-url: "https://discord.com/api/webhooks/..."
 
@@ -88,19 +88,19 @@ CREATE TABLE quest_definitions (
 
 1. `conflict = TRUE` を MySQL にセット
 2. 該当クエストのレジストリ登録をスキップ
-3. リロード権限 (`lifequest.reload`) を持つプレイヤーが参加した際にエラー表示:
-   - `§c[LifeQuest] Quest conflict detected: @namespace/quest_name`
-   - `§cUse /lifequest reload --use-local or --use-mysql to resolve`
+3. リロード権限 (`simplequest.reload`) を持つプレイヤーが参加した際にエラー表示:
+   - `§c[SimpleQuest] Quest conflict detected: @namespace/quest_name`
+   - `§cUse /simplequest reload --use-local or --use-mysql to resolve`
 4. Discord Webhook にエラー通知
 
 コンフリクト解決コマンド:
 
 ```shell
 # ローカルを強制適用 → MySQL へ書き込み
-/lifequest reload --use-local
+/simplequest reload --use-local
 
 # MySQL を強制適用 → ローカル YAML へ書き込み (write-to-yaml のみ)
-/lifequest reload --use-mysql
+/simplequest reload --use-mysql
 ```
 
 `--use-local`:
@@ -121,7 +121,7 @@ CREATE TABLE quest_definitions (
 ```yaml
 # QuestType YAML に自動付与されるメタデータ
 # ユーザーが手動で編集する必要はない
-_lifequest:
+_simplequest:
   version: 1
   checksum: "sha256..."
   updated_at: "2026-07-14T12:00:00Z"
@@ -137,11 +137,11 @@ backup:
   enabled: true
   interval-hours: 24
   retention-days: 30
-  directory: "plugins/LifeQuest/backups/"
+  directory: "plugins/SimpleQuest/backups/"
 ```
 
-- バックアップファイル: `plugins/LifeQuest/backups/yyyy-MM-dd-HH.tar.gz`
-- 内容: `plugins/LifeQuest/@namespace/` 以下の全 YAML + config.yml
+- バックアップファイル: `plugins/SimpleQuest/backups/yyyy-MM-dd-HH.tar.gz`
+- 内容: `plugins/SimpleQuest/@namespace/` 以下の全 YAML + config.yml
 - 保持ポリシー: 各サーバーごとに `retention-days` で制御
 - 保持期間超過ファイルは起動時 / 定期タスクで削除
 

@@ -1,28 +1,28 @@
 # コマンドと権限
 
-## `/lifequest` — メインコマンド
+## `/simplequest` — メインコマンド
 
 | コマンド | 権限 | 説明 |
 |---|---|---|
-| `/lifequest` | — | プラグインのバージョン情報を表示 |
-| `/lifequest reload` | `lifequest.reload` | 設定・クエスト定義を再読み込み |
-| `/lifequest reload --use-local` | `lifequest.reload` | コンフリクトをローカル YAML 優先で解決 + リロード |
-| `/lifequest reload --use-mysql` | `lifequest.reload` | コンフリクトを MySQL 優先で解決 + リロード |
-| `/lifequest quest` | — | クエスト選択 GUI を開く（プレイヤーのみ） |
-| `/lifequest gui` | — | 同上（エイリアス） |
-| `/lifequest party` | — | パーティ管理 GUI を開く（プレイヤーのみ） |
+| `/simplequest` | — | プラグインのバージョン情報を表示 |
+| `/simplequest reload` | `simplequest.reload` | 設定・クエスト定義を再読み込み |
+| `/simplequest reload --use-local` | `simplequest.reload` | コンフリクトをローカル YAML 優先で解決 + リロード |
+| `/simplequest reload --use-mysql` | `simplequest.reload` | コンフリクトを MySQL 優先で解決 + リロード |
+| `/simplequest quest` | — | クエスト選択 GUI を開く（プレイヤーのみ） |
+| `/simplequest gui` | — | 同上（エイリアス） |
+| `/simplequest party` | — | パーティ管理 GUI を開く（プレイヤーのみ） |
 
 ### 使用例
 
 ```bash
 # バージョン確認
-/lifequest
+/simplequest
 
 # クエスト定義を再読み込み
-/lifequest reload
+/simplequest reload
 
 # コンフリクト解決（ローカル優先）
-/lifequest reload --use-local
+/simplequest reload --use-local
 ```
 
 ---
@@ -63,8 +63,8 @@
 
 | 権限ノード | 対象 | 説明 |
 |---|---|---|
-| `lifequest.reload` | 管理者 | `/lifequest reload` の実行を許可。コンフリクト解決を含む |
+| `simplequest.reload` | 管理者 | `/simplequest reload` の実行を許可。コンフリクト解決を含む |
 
 > [!NOTE]
-> 一般プレイヤー向けのコマンド（`/lifequest quest`, `/party invite` 等）に権限は不要です。
+> 一般プレイヤー向けのコマンド（`/simplequest quest`, `/party invite` 等）に権限は不要です。
 > 全プレイヤーがデフォルトで使用できます。

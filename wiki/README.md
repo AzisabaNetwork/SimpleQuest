@@ -1,6 +1,6 @@
-# LifeQuest Wiki
+# SimpleQuest Wiki
 
-Paper 1.21.11 向けクエスト管理プラグイン **LifeQuest** の Wiki です。
+Paper 1.21.11 向けクエスト管理プラグイン **SimpleQuest** の Wiki です。
 
 ## 目次
 

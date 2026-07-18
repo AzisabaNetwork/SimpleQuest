@@ -128,8 +128,8 @@ party.stage is Stage.Queue  → indexOf(party) で待機位置を表示
 ## コマンド
 
 ```shell
-/lifequest stage mount <player> <stage>
-/lifequest stage unmount <player> <stage>
+/simplequest stage mount <player> <stage>
+/simplequest stage unmount <player> <stage>
 ```
 
 詳細は [COMMANDS.md](COMMANDS.md) 参照。

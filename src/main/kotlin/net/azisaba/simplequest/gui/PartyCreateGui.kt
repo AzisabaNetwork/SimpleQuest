@@ -1,5 +1,5 @@
 // Original: https://github.com/AzisabaNetwork/quem by tksimeji
-// Adapted for LifeQuest
+// Adapted for SimpleQuest
 
 package net.azisaba.simplequest.gui
 

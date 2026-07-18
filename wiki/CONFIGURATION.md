@@ -1,6 +1,6 @@
 # config.yml 設定リファレンス
 
-`plugins/LifeQuest/config.yml` の全設定項目の解説です。
+`plugins/SimpleQuest/config.yml` の全設定項目の解説です。
 
 初回起動時に自動生成されるデフォルト値は、シングルサーバー運用を想定しています。
 マルチサーバー運用の場合は `multi-server` セクションを適宜変更してください。
@@ -14,7 +14,7 @@
 database:
   host: "localhost"        # MariaDB / MySQL のホスト名 or IP
   port: 3306               # ポート番号
-  name: "lifequest"        # データベース名
+  name: "simplequest"        # データベース名
   user: "root"             # 接続ユーザー名
   password: ""             # 接続パスワード
 
@@ -30,7 +30,7 @@ partyInviteLimit: 1200     # パーティ招待の有効期限（秒、デフォ
 
 # ── GUI パネル設定 ──
 panel:
-  title: "&dLifeQuest"     # クエスト選択 GUI のタイトル
+  title: "&dSimpleQuest"     # クエスト選択 GUI のタイトル
   footer: "&7azisaba.net"  # GUI 下部のフッターテキスト
 
 # ── マルチサーバー同期設定 ──
@@ -42,7 +42,7 @@ multi-server:
     enabled: false         # 定期バックアップの有効 / 無効
     interval-hours: 24     # バックアップ間隔（時間）
     retention-days: 30     # バックアップ保持日数
-    directory: "plugins/LifeQuest/backups/"  # バックアップ格納ディレクトリ
+    directory: "plugins/SimpleQuest/backups/"  # バックアップ格納ディレクトリ
 
 # ── Discord 通知設定 ──
 discord:
@@ -110,14 +110,14 @@ Kunectron GUI の表示設定です。
 - `"LOCAL"`: ローカル YAML の内容を優先
 - `"MYSQL"`: MySQL の内容を優先
 
-コンフリクトが発生した場合、`/lifequest reload --use-local` または `--use-mysql` で明示的に解決できます。
+コンフリクトが発生した場合、`/simplequest reload --use-local` または `--use-mysql` で明示的に解決できます。
 
 #### `backup`
 
 `write-to-mysql: true` のサーバーでのみ動作する定期バックアップ設定です。
 
 - バックアップファイル: `backups/yyyy-MM-dd-HH.tar.gz`
-- 内容: `plugins/LifeQuest/@namespace/` 以下の全 YAML + config.yml
+- 内容: `plugins/SimpleQuest/@namespace/` 以下の全 YAML + config.yml
 - `retention-days` を超えたファイルは起動時 / 定期タスクで自動削除されます
 
 ### `discord`
@@ -133,12 +133,12 @@ Kunectron GUI の表示設定です。
 
 ```bash
 # サーバー内でコマンド実行
-/lifequest reload
+/simplequest reload
 
 # コンフリクトがある場合の強制反映
-/lifequest reload --use-local    # ローカル YAML 優先
-/lifequest reload --use-mysql    # MySQL 優先
+/simplequest reload --use-local    # ローカル YAML 優先
+/simplequest reload --use-mysql    # MySQL 優先
 ```
 
 > [!IMPORTANT]
-> `config.yml` の変更は `/lifequest reload` で反映されます。サーバー再起動は不要です。
+> `config.yml` の変更は `/simplequest reload` で反映されます。サーバー再起動は不要です。

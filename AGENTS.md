@@ -1,4 +1,4 @@
-# LifeQuest
+# SimpleQuest
 
 ## 概要
 
@@ -24,10 +24,10 @@ MythicMobs ライクな YAML 記法でクエスト定義を記述し、マルチ
 ## プロジェクト構造
 
 ```
-src/main/kotlin/net/azisaba/lifequest/
-├── LifeQuest.kt                — プラグインエントリポイント
-├── LifeQuestBootstrap.kt       — PluginBootstrap + コマンド
-├── LifeQuestLoader.kt          — YAML 名前空間スキャン
+src/main/kotlin/net/azisaba/simplequest/
+├── SimpleQuest.kt                — プラグインエントリポイント
+├── SimpleQuestBootstrap.kt       — PluginBootstrap + コマンド
+├── SimpleQuestLoader.kt          — YAML 名前空間スキャン
 ├── action/                     — Action システム (4種)
 ├── command/                    — Formula パーサー
 ├── data/                       — @Serializable data class
@@ -48,10 +48,10 @@ src/main/kotlin/net/azisaba/lifequest/
 
 | コマンド | 権限 | 説明 |
 |---|---|---|
-| `/lifequest` | — | バージョン表示 |
-| `/lifequest reload [--use-local\|--use-mysql]` | lifequest.reload | 設定再読み込み / コンフリクト解決 |
-| `/lifequest quest` | — | クエスト選択GUI |
-| `/lifequest party` | — | パーティー管理GUI |
+| `/simplequest` | — | バージョン表示 |
+| `/simplequest reload [--use-local\|--use-mysql]` | simplequest.reload | 設定再読み込み / コンフリクト解決 |
+| `/simplequest quest` | — | クエスト選択GUI |
+| `/simplequest party` | — | パーティー管理GUI |
 | `/party invite <player>` | — | パーティ招待 |
 | `/party accept <id>` | — | 招待承諾 |
 | `/party kick <player>` | リーダー | メンバーキック |
@@ -61,7 +61,7 @@ src/main/kotlin/net/azisaba/lifequest/
 - `write-to-mysql: true`: 起動時/reload時にローカルYAMLをMySQLへUPSERT
 - `write-to-yaml: true`: MySQLの内容でローカルYAMLを更新
 - 両方 `false`: 読取り専用 (進捗表示のみ)
-- コンフリクト: checksum不一致時に `conflict` フラグ。`/lifequest reload --use-local/--use-mysql` で解決
+- コンフリクト: checksum不一致時に `conflict` フラグ。`/simplequest reload --use-local/--use-mysql` で解決
 
 ## テスト
 

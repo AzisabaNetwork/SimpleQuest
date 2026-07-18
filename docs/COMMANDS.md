@@ -1,24 +1,24 @@
 # コマンド一覧
 
-## /lifequest (管理コマンド)
+## /simplequest (管理コマンド)
 
 Paper Brigadier を使用して実装。
 
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
-| `debug` | `lifequest.debug` | GUI デバッグ表示 |
-| `grant <targets> <type>` | `lifequest.grant` | プレイヤーに QuestType を解放 |
-| `progress <target> <requirement> <formula>` | `lifequest.progress` | クエスト進捗を変更 |
-| `reload` | `lifequest.reload` | 設定・名前空間を再読み込み (DB 再接続含む) |
-| `revoke <targets> <type>` | `lifequest.revoke` | プレイヤーから QuestType を剥奪 |
-| `stage mount <targets> <stage>` | `lifequest.stage` | パーティをステージにマウント |
-| `stage unmount <targets> <stage>` | `lifequest.stage` | パーティをステージからアンマウント |
+| `debug` | `simplequest.debug` | GUI デバッグ表示 |
+| `grant <targets> <type>` | `simplequest.grant` | プレイヤーに QuestType を解放 |
+| `progress <target> <requirement> <formula>` | `simplequest.progress` | クエスト進捗を変更 |
+| `reload` | `simplequest.reload` | 設定・名前空間を再読み込み (DB 再接続含む) |
+| `revoke <targets> <type>` | `simplequest.revoke` | プレイヤーから QuestType を剥奪 |
+| `stage mount <targets> <stage>` | `simplequest.stage` | パーティをステージにマウント |
+| `stage unmount <targets> <stage>` | `simplequest.stage` | パーティをステージからアンマウント |
 
 ### grant / revoke
 
 ```shell
-/lifequest grant @p lq:example
-/lifequest revoke @p lq:example
+/simplequest grant @p lq:example
+/simplequest revoke @p lq:example
 ```
 
 - `targets` は Player セレクター
@@ -28,9 +28,9 @@ Paper Brigadier を使用して実装。
 ### progress
 
 ```shell
-/lifequest progress @p requirement1 +2
-/lifequest progress @p requirement1 "=10"
-/lifequest progress @p requirement1 "*3"
+/simplequest progress @p requirement1 +2
+/simplequest progress @p requirement1 "=10"
+/simplequest progress @p requirement1 "*3"
 ```
 
 **FormulaArgumentType — 数式パーサ**
@@ -49,8 +49,8 @@ Paper Brigadier を使用して実装。
 ### stage mount / unmount
 
 ```shell
-/lifequest stage mount @p namespace:boss_arena
-/lifequest stage unmount @p namespace:boss_arena
+/simplequest stage mount @p namespace:boss_arena
+/simplequest stage unmount @p namespace:boss_arena
 ```
 
 - マウント: パーティがキューに追加される (空きがあれば即時マウント)
@@ -97,9 +97,9 @@ Paper Brigadier を使用して実装。
 
 | 権限 | デフォルト | 用途 |
 |---|---|---|
-| `lifequest.debug` | op | デバッグ GUI |
-| `lifequest.grant` | op | QuestType 解放 |
-| `lifequest.progress` | op | 進捗変更 |
-| `lifequest.reload` | op | リロード |
-| `lifequest.revoke` | op | QuestType 剥奪 |
-| `lifequest.stage` | op | ステージ管理 |
+| `simplequest.debug` | op | デバッグ GUI |
+| `simplequest.grant` | op | QuestType 解放 |
+| `simplequest.progress` | op | 進捗変更 |
+| `simplequest.reload` | op | リロード |
+| `simplequest.revoke` | op | QuestType 剥奪 |
+| `simplequest.stage` | op | ステージ管理 |

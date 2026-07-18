@@ -7,14 +7,14 @@ YAML からデシリアライズされる data class と、データベースス
 
 ## Config (`data/Config.kt`)
 
-`plugins/LifeQuest/config.yml` に対応。
+`plugins/SimpleQuest/config.yml` に対応。
 
 ```yaml
 # データベース
 database:
   host: "localhost"
   port: 3306
-  name: "lifequest"
+  name: "simplequest"
   user: "root"
   password: ""
 
@@ -40,7 +40,7 @@ lobby:
 
 # クエストパネルの設定 (スコアボード)
 panel:
-  title: '&dLifeQuest'
+  title: '&dSimpleQuest'
   footer: '&7いますぐ &eazisaba.net&7 で遊べ！'
 ```
 

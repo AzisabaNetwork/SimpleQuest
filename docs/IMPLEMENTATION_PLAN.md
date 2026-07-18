@@ -1,6 +1,6 @@
 # 実装計画
 
-> パーサー（YAML クエスト記法読み込み）を除く LifeQuest の実装を段階的に進める。
+> パーサー（YAML クエスト記法読み込み）を除く SimpleQuest の実装を段階的に進める。
 > 各フェーズの詳細タスクは `implPlans/` 配下の個別ファイルを参照。
 
 | Phase | ファイル | 内容 |
@@ -9,7 +9,7 @@
 | 1 | [01-infrastructure.md](../implPlans/01-infrastructure.md) | レジストリ, DB接続, migration, リポジトリ |
 | 2 | [02-domain-models.md](../implPlans/02-domain-models.md) | Quest/Party/Stage/Action/Script ドメイン |
 | 3 | [03-quest-engine.md](../implPlans/03-quest-engine.md) | ライフサイクル, 進捗, Action発火 |
-| 4 | [04-commands.md](../implPlans/04-commands.md) | /lifequest, /party |
+| 4 | [04-commands.md](../implPlans/04-commands.md) | /simplequest, /party |
 | 5 | [05-listeners.md](../implPlans/05-listeners.md) | 退出/死亡/エリア侵入 |
 | 6 | [06-gui.md](../implPlans/06-gui.md) | Kunectron GUI |
 
@@ -24,7 +24,7 @@ Phase 0: プロジェクト土台
         ├─ Phase 2B: DB テーブル + リポジトリ
         │
         └─ Phase 3: クエストエンジン (ライフサイクル / 進捗管理)
-              ├─ Phase 4: コマンド (/lifequest, /party)
+              ├─ Phase 4: コマンド (/simplequest, /party)
               ├─ Phase 5: イベントリスナー
               │
               └─ Phase 6: GUI 基盤 (Kunectron 導入)
@@ -41,8 +41,8 @@ Phase 0: プロジェクト土台
 | 0.1 | Gradle ビルド定義 | `build.gradle.kts` | Kotlin JVM, paperweight-userdev, kotlinx-serialization |
 | 0.2 | Version Catalog | `gradle/libs.versions.toml` | 全依存バージョン一元管理 |
 | 0.3 | 設定ファイル | `settings.gradle.kts` | プロジェクト名、リポジトリ |
-| 0.4 | Plugin エントリポイント | `LifeQuest.kt` | JavaPlugin 継承。onEnable / onDisable |
-| 0.5 | Bootstrap | `LifeQuestBootstrap.kt` | PluginBootstrap でコマンド登録 |
+| 0.4 | Plugin エントリポイント | `SimpleQuest.kt` | JavaPlugin 継承。onEnable / onDisable |
+| 0.5 | Bootstrap | `SimpleQuestBootstrap.kt` | PluginBootstrap でコマンド登録 |
 | 0.6 | plugin.yml | `src/main/resources/plugin.yml` | プラグイン定義 |
 | 0.7 | Config スキーマ | `Config.kt` | config.yml 対応 data class |
 | 0.8 | デフォルト config | `src/main/resources/config.yml` | 配布用 config |
@@ -166,7 +166,7 @@ Phase 0: プロジェクト土台
 
 | # | タスク | ファイル | 内容 |
 |---|---|---|---|
-| 4.1 | LifeQuestCommand | `command/LifeQuestCommand.kt` | /lifequest メインコマンド |
+| 4.1 | SimpleQuestCommand | `command/SimpleQuestCommand.kt` | /simplequest メインコマンド |
 | 4.2 | grant / revoke | 同上 | 解放管理サブコマンド |
 | 4.3 | progress (数式パーサ) | 同上 | 進捗変更 (FormulaArgumentType) |
 | 4.4 | reload | 同上 | リロード |
@@ -210,9 +210,9 @@ Phase 0: プロジェクト土台
 
 | マイルストーン | 完了条件 | 想定工数 |
 |---|---|---|
-| **M0: 起動する** | サーバーに突っ込んで LifeQuest が有効化される。config.yml が生成される | 小 |
+| **M0: 起動する** | サーバーに突っ込んで SimpleQuest が有効化される。config.yml が生成される | 小 |
 | **M1: DB につながる** | HikariCP + Exposed で MariaDB に接続、migration が流れる | 小 |
-| **M2: コマンドが動く** | `/lifequest reload` 等がエラーなく実行できる | 中 |
+| **M2: コマンドが動く** | `/simplequest reload` 等がエラーなく実行できる | 中 |
 | **M3: クエストが開始/完了できる** | 簡易テストでクエスト開始〜完了〜Action 実行まで通る | 大 |
 | **M4: パーティシステム** | `paty invite/accept` でパーティが組める | 中 |
 | **M5: GUI が出る** | QuestGui が表示される | 中 |

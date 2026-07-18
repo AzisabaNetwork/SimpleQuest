@@ -1,4 +1,4 @@
-# LifeQuest
+# SimpleQuest
 
 アジ鯖 Reincarnation PvE サーバー向け Paper プラグインのクエストマネージャー。
 
@@ -11,7 +11,7 @@
 
 > **Original GUI System: [AzisabaNetwork/quem](https://github.com/AzisabaNetwork/quem) by tksimeji**
 >
-> `src/main/kotlin/net/azisaba/lifequest/gui/` 以下の GUI 実装は
+> `src/main/kotlin/net/azisaba/simplequest/gui/` 以下の GUI 実装は
 > Quem の Kunectron ベース実装を移植・改変したものです。
 > 各ファイルの先頭にもクレジットを記載しています。
 
@@ -31,12 +31,12 @@ Kunectron も `plugins/` に導入すると GUI が有効になる。
 ## ディレクトリ構成
 
 ```
-LifeQuest/
+SimpleQuest/
 ├── AGENTS.md                    # プロジェクトコンテキスト
-├── src/main/kotlin/net/azisaba/lifequest/
-│   ├── LifeQuest.kt             # エントリポイント
-│   ├── LifeQuestBootstrap.kt    # PluginBootstrap + コマンド
-│   ├── LifeQuestLoader.kt       # YAML 読み込み
+├── src/main/kotlin/net/azisaba/simplequest/
+│   ├── SimpleQuest.kt             # エントリポイント
+│   ├── SimpleQuestBootstrap.kt    # PluginBootstrap + コマンド
+│   ├── SimpleQuestLoader.kt       # YAML 読み込み
 │   ├── action/                  # 報酬アクション
 │   ├── database/                # DB 接続/同期/Webhook/バックアップ
 │   ├── gui/                     # Kunectron GUI

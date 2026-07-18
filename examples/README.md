@@ -1,6 +1,6 @@
-# LifeQuest クエスト記法サンプル
+# SimpleQuest クエスト記法サンプル
 
-LifeQuest のクエスト YAML 記法のサンプルです。
+SimpleQuest のクエスト YAML 記法のサンプルです。
 
 ## 収録クエスト
 

@@ -1,4 +1,4 @@
-# LifeQuest ドキュメント
+# SimpleQuest ドキュメント
 
 > [!NOTE]
 > サーバー管理者向けのセットアップ手順・コマンドリファレンスは **[wiki/](../wiki/README.md)** を参照してください。

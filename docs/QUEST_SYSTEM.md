@@ -213,7 +213,7 @@ progresses[requirement] = newValue
 | `DEATH_LIMIT` | 死亡回数上限超過 (新規) |
 | `OTHER` | その他の理由 |
 | `PLUGIN` | プラグイン停止 |
-| `RELOAD` | `/lifequest reload` による強制終了 |
+| `RELOAD` | `/simplequest reload` による強制終了 |
 
 ### 発火順序
 

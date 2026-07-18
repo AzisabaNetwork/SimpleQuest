@@ -1,6 +1,6 @@
 # 技術スタック選定
 
-> LifeQuest で使用するライブラリ・ツールの選定資料。
+> SimpleQuest で使用するライブラリ・ツールの選定資料。
 > 各カテゴリで複数候補を比較し、推奨を提示する。
 
 ## 凡例
@@ -143,7 +143,7 @@ class V1__CreateQuestProgress : Migration() {
 // マイグレーション実行
 transaction {
     SchemaUtils.withDataMigration(
-        "lifequest_migrations",
+        "simplequest_migrations",
         listOf(V1__CreateQuestProgress())
     ).apply { migrationTool.migrate() }
 }

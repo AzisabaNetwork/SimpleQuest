@@ -1,6 +1,6 @@
 # クエスト定義の作成
 
-LifeQuest のクエストは **YAML ファイル** で定義します。MythicMobs ライクな記法を採用しており、
+SimpleQuest のクエストは **YAML ファイル** で定義します。MythicMobs ライクな記法を採用しており、
 直感的に記述できます。
 
 ## 目次
@@ -16,7 +16,7 @@ LifeQuest のクエストは **YAML ファイル** で定義します。MythicMo
 ## ファイルの配置
 
 ```
-plugins/LifeQuest/
+plugins/SimpleQuest/
 └── @namespace/         ← 任意の名前空間（例: @lq）
     └── types/          ← ここに .yml ファイルを配置
         ├── wolf_slayer.yml
@@ -396,10 +396,10 @@ DragonSlayer:
 
 ### 名前空間の追加
 
-新しい名前空間を追加するには、`plugins/LifeQuest/` 以下にディレクトリを作成します：
+新しい名前空間を追加するには、`plugins/SimpleQuest/` 以下にディレクトリを作成します：
 
 ```
-plugins/LifeQuest/
+plugins/SimpleQuest/
 ├── @lq/           ← デフォルト
 │   └── types/
 │       ├── quest_a.yml
@@ -414,7 +414,7 @@ plugins/LifeQuest/
 YAML ファイルを編集したら必ずリロードしてください：
 
 ```bash
-/lifequest reload
+/simplequest reload
 ```
 
 ### よくある間違い

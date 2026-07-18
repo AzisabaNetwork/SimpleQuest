@@ -27,7 +27,7 @@
 
 # Jar 作成
 ./gradlew jar
-# → build/libs/LifeQuest-1.0.0-SNAPSHOT.jar
+# → build/libs/SimpleQuest-1.0.0-SNAPSHOT.jar
 ```
 
 ## 開発サーバーセットアップ
@@ -37,7 +37,7 @@
 ./gradlew jar
 
 # 2. Jar をサーバーの plugins/ にコピー
-cp build/libs/LifeQuest-*.jar /path/to/server/plugins/
+cp build/libs/SimpleQuest-*.jar /path/to/server/plugins/
 
 # 3. Kunectron も plugins/ に配置
 #    https://github.com/tksimeji/kunectron からダウンロード
@@ -47,10 +47,10 @@ cp build/libs/LifeQuest-*.jar /path/to/server/plugins/
 
 ## クエスト定義の追加
 
-サーバー起動後、`plugins/LifeQuest/` に以下の構造で YAML を配置:
+サーバー起動後、`plugins/SimpleQuest/` に以下の構造で YAML を配置:
 
 ```
-plugins/LifeQuest/
+plugins/SimpleQuest/
 └── @lq/
     └── types/
         ├── wolf_slayer.yml
@@ -60,7 +60,7 @@ plugins/LifeQuest/
 リロード:
 
 ```bash
-/lifequest reload
+/simplequest reload
 ```
 
 ## テスト
@@ -70,7 +70,7 @@ plugins/LifeQuest/
 ./gradlew test
 
 # 特定テストクラス
-./gradlew test --tests "net.azisaba.lifequest.QuestTypeTest"
+./gradlew test --tests "net.azisaba.simplequest.QuestTypeTest"
 
 # 詳細ログ
 ./gradlew test --info
@@ -81,10 +81,10 @@ plugins/LifeQuest/
 ```
 src/
 ├── main/
-│   └── kotlin/net/azisaba/lifequest/
-│       ├── LifeQuest.kt             — プラグインエントリポイント
-│       ├── LifeQuestBootstrap.kt    — PluginBootstrap + コマンド登録
-│       ├── LifeQuestLoader.kt       — YAML 名前空間スキャン
+│   └── kotlin/net/azisaba/simplequest/
+│       ├── SimpleQuest.kt             — プラグインエントリポイント
+│       ├── SimpleQuestBootstrap.kt    — PluginBootstrap + コマンド登録
+│       ├── SimpleQuestLoader.kt       — YAML 名前空間スキャン
 │       ├── action/                  — Action システム
 │       ├── command/                 — コマンドユーティリティ
 │       ├── data/                    — @Serializable data class
@@ -98,5 +98,5 @@ src/
 │       ├── script/                  — スクリプトシステム
 │       └── stage/                   — ステージシステム
 └── test/
-    └── kotlin/net/azisaba/lifequest/  — kotest + MockBukkit テスト
+    └── kotlin/net/azisaba/simplequest/  — kotest + MockBukkit テスト
 ```
