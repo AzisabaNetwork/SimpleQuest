@@ -137,8 +137,7 @@ tasks {
 
         // Environment variables for server connectivity
         environment("MASTER_PORT", "25565")
-        environment("MASTER_RCON_PORT", "25575")
-        environment("RCON_PASSWORD", "test")
+        environment("SERVER_LOG", "servers/master/server.log")
         environment("MARIADB_URL", "jdbc:mariadb://localhost:3306/simplequest")
         environment("MARIADB_USER", "root")
         environment("MARIADB_PASSWORD", "test")
