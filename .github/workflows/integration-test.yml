@@ -106,7 +106,7 @@ jobs:
 
           mkfifo "$dir/stdin"
           tail -f "$dir/stdin" | \
-            java -Xmx1G -jar "$dir/paper.jar" --nogui > "$log" 2>&1 &
+            (cd "$dir" && java -Xmx1G -jar paper.jar --nogui) > "$log" 2>&1 &
           echo $! > "$dir/pid"
 
           # Wait for "Done" (max 180s)
