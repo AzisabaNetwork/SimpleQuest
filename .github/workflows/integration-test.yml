@@ -58,8 +58,8 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: bots/package-lock.json
+          cache: pnpm
+          cache-dependency-path: bots/pnpm-lock.yaml
 
       - name: Build plugin
         run: ./gradlew shadowJar
@@ -124,7 +124,9 @@ jobs:
       - name: Start servers
         run: |
           start_server() {
-            local name=$1 dir="servers/$name" log="$dir/server.log"
+            local name=$1
+            local dir="servers/$name"
+            local log="$dir/server.log"
             mkfifo "$dir/stdin"
             tail -f "$dir/stdin" | \
               java -Xmx1G -jar "$dir/paper.jar" --nogui > "$log" 2>&1 &
@@ -150,12 +152,14 @@ jobs:
 
       - name: Install bot dependencies
         working-directory: bots
-        run: npm ci
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
 
       - name: Run bot scenarios
         working-directory: bots
         run: |
-          npx tsx src/main.ts 2>&1 | tee ../artifacts/bot-output.log
+          pnpm exec tsx src/main.ts 2>&1 | tee ../artifacts/bot-output.log
 
       - name: Run kotest integration tests
         run: ./gradlew integrationTest --no-daemon
@@ -164,7 +168,12 @@ jobs:
         if: always()
         run: |
           stop_server() {
-            local name=$1 dir="servers/$name"
+            local name=$1
+            local dir="servers/$name"
+            if [ ! -d "$dir" ]; then
+              echo "[$name] Server directory not found, skipping"
+              return 0
+            fi
             echo "stop" > "$dir/stdin"
 
             # Wait for graceful shutdown (max 30s)
