@@ -123,7 +123,11 @@ jobs:
           echo "Server started on port 25565"
 
       - name: Run kotest integration tests
-        run: ./gradlew integrationTestTask --no-daemon
+        run: |
+          echo "=== server log (last 20 lines) ==="
+          tail -20 servers/master/server.log || echo "NO LOG FILE"
+          echo "=== running tests ==="
+          ./gradlew integrationTestTask --no-daemon
 
       - name: Stop server
         if: always()
