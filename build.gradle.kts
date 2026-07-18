@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version libs.versions.kotlin.get()
     kotlin("plugin.serialization") version libs.versions.kotlin.get()
     alias(libs.plugins.ksp)
+    alias(libs.plugins.shadow)
     java
 }
 
@@ -79,6 +80,28 @@ dependencies {
 tasks {
     compileKotlin {
         compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+
+        // Relocate dependencies to avoid conflicts with other plugins
+        relocate("org.jetbrains.exposed", "net.azisaba.simplequest.shaded.exposed")
+        relocate("com.charleskorn.kaml", "net.azisaba.simplequest.shaded.kaml")
+        relocate("org.flywaydb", "net.azisaba.simplequest.shaded.flyway")
+        relocate("io.ktor", "net.azisaba.simplequest.shaded.ktor")
+        relocate("io.lettuce", "net.azisaba.simplequest.shaded.lettuce")
+
+        // Merge META-INF/services files and relocate class names inside them.
+        // Required for Exposed (DatabaseConnectionAutoRegistration) and Flyway (Java ServiceLoader).
+        mergeServiceFiles()
+
+        // Exclude signature files that cause issues in fat JARs
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+    }
+
+    build {
+        dependsOn(shadowJar)
     }
 
     test {
