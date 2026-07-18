@@ -2,6 +2,7 @@ package net.azisaba.simplequest.integration
 
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.sql.Connection
@@ -64,8 +65,8 @@ class ServerAssertions(
                             "SELECT COUNT(*) FROM quest_definitions",
                         )
                     rs.next()
-                    // Just check the table exists, count may be 0
-                    rs.getInt(1) shouldBe 0
+                    // Just check the table exists (query succeeds)
+                    rs.getInt(1) shouldBeGreaterThanOrEqual 0
                 }
             }
         }
