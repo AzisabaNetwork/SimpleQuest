@@ -1,0 +1,151 @@
+name: Integration Test
+
+on:
+  pull_request:
+    branches: [release]
+
+permissions: {}
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: test
+          MARIADB_DATABASE: simplequest
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Java 21
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          cache-read-only: true
+
+      - name: Build plugin
+        run: ./gradlew shadowJar
+
+      - name: Setup Paper server
+        run: |
+          mkdir -p artifacts
+
+          # Download Paper 1.21.11 (latest stable)
+          API="https://fill.papermc.io/v3/projects/paper"
+          UA="SimpleQuest-CI/1.0"
+          URL=$(curl -fsSL -H "User-Agent: $UA" \
+            "$API/versions/1.21.11/builds" | \
+            jq -r '[.[] | select(.channel == "STABLE")] | last
+              | .downloads["server:default"].url')
+          curl -fsSL -H "User-Agent: $UA" -o paper.jar "$URL"
+
+          dir="servers/master"
+          mkdir -p "$dir/plugins/SimpleQuest"
+
+          printf 'eula=true\n' > "$dir/eula.txt"
+
+          printf '%s\n' \
+            "online-mode=false" \
+            "server-port=25565" \
+            "enable-rcon=true" \
+            "rcon.port=25575" \
+            "rcon.password=test" \
+            > "$dir/server.properties"
+
+          echo "=== build/libs contents ==="
+          ls -la build/libs/
+          echo "=== copying ==="
+          cp -v build/libs/*.jar "$dir/plugins/" || echo "COPY FAILED"
+          echo "=== plugins after copy ==="
+
+          # Copy server config fixture (master: write-to-mysql=true)
+          cp src/integrationTest/resources/master-config.yml \
+            "$dir/plugins/SimpleQuest/config.yml"
+
+          # Copy test quests
+          QDIR="$dir/plugins/SimpleQuest/@test/types"
+          mkdir -p "$QDIR"
+          cp src/integrationTest/resources/quests/test_quest.yml "$QDIR/"
+
+          # Copy Paper jar
+          cp paper.jar "$dir/"
+
+      - name: Start server
+        run: |
+          dir="servers/master"
+
+          cd "$dir"
+          java -Xmx1G -jar paper.jar --nogui &
+          echo $! > pid
+          cd "$OLDPWD"
+
+          # Wait for "Done" via tail -f on Paper's actual log file
+          timeout 240 bash -c "
+            until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done ('; do
+              sleep 2
+            done
+          " || {
+            echo 'Server failed to start! Last 50 lines:'
+            tail -50 $dir/logs/latest.log
+            exit 1
+          }
+
+          echo 'Server started on port 25565'
+
+      - name: Run kotest integration tests
+        run: |
+          echo "=== latest.log (last 20 lines) ==="
+          tail -20 servers/master/logs/latest.log || echo "NO LOG FILE"
+          echo "=== running tests ==="
+          ./gradlew integrationTestTask --no-daemon
+
+      - name: Stop server
+        if: always()
+        run: |
+          dir="servers/master"
+          if [ -f "$dir/pid" ]; then
+            kill $(cat "$dir/pid") 2>/dev/null || true
+            echo "Server stopped"
+          fi
+          cp "$dir/logs/latest.log" artifacts/latest.log || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: integration-test-results
+          path: |
+            artifacts/*.log
+            build/reports/tests/integrationTest/**
+          retention-days: 7

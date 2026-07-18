@@ -22,6 +22,11 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
+val integrationTest by sourceSets.creating {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += output + compileClasspath
+}
+
 dependencies {
     // Paper
     compileOnly(libs.paper.api)
@@ -75,25 +80,27 @@ dependencies {
 
     // GUI (compileOnly — must be installed on server)
     compileOnly(libs.kunectron)
+
+    // Integration test
+    add("integrationTestImplementation", libs.kotest.runner)
+    add("integrationTestImplementation", libs.kotest.assertions)
+    add("integrationTestImplementation", libs.kotest.framework)
+    add("integrationTestImplementation", libs.mariadb)
+    add("integrationTestImplementation", libs.lettuce.core)
+    add("integrationTestImplementation", libs.h2)
 }
 
 tasks {
-    compileKotlin {
-        compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions.jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21,
+        )
     }
 
     shadowJar {
         archiveClassifier.set("")
 
-        // Relocate dependencies to avoid conflicts with other plugins
-        relocate("org.jetbrains.exposed", "net.azisaba.simplequest.shaded.exposed")
-        relocate("com.charleskorn.kaml", "net.azisaba.simplequest.shaded.kaml")
-        relocate("org.flywaydb", "net.azisaba.simplequest.shaded.flyway")
-        relocate("io.ktor", "net.azisaba.simplequest.shaded.ktor")
-        relocate("io.lettuce", "net.azisaba.simplequest.shaded.lettuce")
-
-        // Merge META-INF/services files and relocate class names inside them.
-        // Required for Exposed (DatabaseConnectionAutoRegistration) and Flyway (Java ServiceLoader).
+        // Merge META-INF/services files
         mergeServiceFiles()
 
         // Exclude signature files that cause issues in fat JARs
@@ -106,5 +113,25 @@ tasks {
 
     test {
         useJUnitPlatform()
+    }
+
+    val integrationTestTask by registering(Test::class) {
+        description =
+            "Runs integration tests (requires running Paper servers)"
+        group = "verification"
+        testClassesDirs = integrationTest.output.classesDirs
+        classpath = integrationTest.runtimeClasspath
+
+        // Only run in CI
+        onlyIf { System.getenv("CI") == "true" }
+
+        useJUnitPlatform()
+
+        // Environment variables for server connectivity
+        environment("MASTER_PORT", "25565")
+        environment("SERVER_LOG", "servers/master/logs/latest.log")
+        environment("MARIADB_URL", "jdbc:mariadb://localhost:3306/simplequest")
+        environment("MARIADB_USER", "root")
+        environment("MARIADB_PASSWORD", "test")
     }
 }

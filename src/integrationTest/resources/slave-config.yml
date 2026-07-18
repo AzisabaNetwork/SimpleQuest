@@ -1,0 +1,32 @@
+# Slave server — reads quest definitions from MySQL, writes to local YAML
+database:
+  host: localhost
+  port: 3306
+  name: simplequest
+  user: root
+  password: test
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+
+maxPartySize: 8
+partyInviteLimit: 1200
+
+panel:
+  title: "&dSimpleQuest [Slave]"
+  footer: "&7azisaba.net"
+
+multi-server:
+  write-to-mysql: false
+  write-to-yaml: true
+  conflict-mode: MYSQL
+  backup:
+    enabled: false
+    interval-hours: 24
+    retention-days: 30
+    directory: "plugins/SimpleQuest/backups/"
+
+discord:
+  webhook-url: ""

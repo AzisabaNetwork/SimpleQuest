@@ -1,0 +1,23 @@
+TestQuest:
+  Title: "&aIntegration Test Quest"
+  Description:
+    - "&7This quest verifies integration test infrastructure."
+  Icon: "DIAMOND"
+  Aura: false
+  Giver: "&eTest NPC"
+  Category: "lq:general"
+  Options:
+    Limits:
+      Daily: 10
+      Lifetime: 100
+  Objectives:
+    BreakStone: 5
+  Actions:
+    OnComplete:
+      - Type: Command
+        Params: "say % completed the integration test quest!"
+  Scripts:
+    OnStart:
+      - "say Quest started — integration test"
+    OnComplete:
+      - "say Quest completed — integration test"

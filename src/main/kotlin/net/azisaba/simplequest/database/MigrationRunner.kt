@@ -29,7 +29,7 @@ class MigrationRunner
                     Flyway
                         .configure()
                         .dataSource(dataSource)
-                        .locations("classpath:net/azisaba/simplequest/database/migration")
+                        .javaMigrations(V1__InitialSetup(dataSource))
                         .load()
                 val result = flyway.migrate()
                 logger.info("Flyway migration completed: ${result.migrations.size} migration(s) applied.")
