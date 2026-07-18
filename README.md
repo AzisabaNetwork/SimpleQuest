@@ -51,6 +51,7 @@ SimpleQuest/
 ## ドキュメント
 
 - `docs/README.md` — 全ドキュメント目次
+- `wiki/` — ユーザー向け Wiki（[COMMANDS](wiki/COMMANDS.md), [CONFIGURATION](wiki/CONFIGURATION.md), [QUEST_CREATION](wiki/QUEST_CREATION.md), [SERVER_SETUP](wiki/SERVER_SETUP.md)）
 - `AGENTS.md` — 技術スタック・構造・記法リファレンス
 - `examples/` — クエスト YAML サンプル
 
