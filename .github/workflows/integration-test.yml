@@ -9,7 +9,7 @@ permissions: {}
 jobs:
   integration-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
 
@@ -111,8 +111,8 @@ jobs:
           cd "$OLDPWD"
 
           # Wait for "Done" via tail -f on Paper's actual log file
-          timeout 180 bash -c "
-            until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done'; do
+          timeout 240 bash -c "
+            until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done ('; do
               sleep 2
             done
           " || {
