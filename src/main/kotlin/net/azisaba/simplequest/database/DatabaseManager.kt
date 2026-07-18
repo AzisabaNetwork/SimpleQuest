@@ -35,6 +35,7 @@ class DatabaseManager
                 val hikariConfig =
                     HikariConfig().apply {
                         jdbcUrl = "jdbc:mariadb://${config.host}:${config.port}/${config.name}"
+                        driverClassName = "org.mariadb.jdbc.Driver"
                         username = config.user
                         password = config.password
                         maximumPoolSize = 10
