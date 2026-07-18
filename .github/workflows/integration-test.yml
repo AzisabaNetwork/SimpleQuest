@@ -50,12 +50,12 @@ jobs:
           cache: gradle
 
       - name: Setup Node.js (for bot scenarios)
-        uses: actions/setup-node@9760d32a8959ee3e856f22312ac55e59fb1aeeff # v5.3.0
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
       - name: Setup pnpm (for bot dependencies)
-        uses: pnpm/action-setup@9922f3ed55635bb89f107d295977d29dbf08f6a1 # v6.0.0
+        uses: pnpm/action-setup@v4
         with:
           version: latest
 
