@@ -7,11 +7,6 @@
     "quest": "npx tsx src/quest-scenario.ts",
     "screenshot": "npx tsx src/screenshot.ts"
   },
-  "pnpm": {
-    "overrides": {
-      "uuid": ">=11.1.1"
-    }
-  },
   "dependencies": {
     "mineflayer": "^4.34.0",
     "prismarine-viewer": "^1.28.0"
