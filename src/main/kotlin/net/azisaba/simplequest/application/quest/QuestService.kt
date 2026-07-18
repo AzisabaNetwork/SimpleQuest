@@ -139,6 +139,22 @@ class QuestService
 
         val activeQuestCount: Int get() = activeQuests.size
 
+        /** Grants a quest type to a player. */
+        fun grantQuest(
+            playerId: String,
+            questKey: String,
+        ) {
+            questRepository.grant(playerId, questKey)
+        }
+
+        /** Revokes a quest type from a player. */
+        fun revokeQuest(
+            playerId: String,
+            questKey: String,
+        ) {
+            questRepository.revoke(playerId, questKey)
+        }
+
         // ---- private ----
 
         private fun createQuest(

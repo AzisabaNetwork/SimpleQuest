@@ -5,11 +5,13 @@ import io.papermc.paper.plugin.bootstrap.BootstrapContext
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import net.azisaba.simplequest.command.Formula
 import net.azisaba.simplequest.party.InviteManager
-import net.azisaba.simplequest.party.Party
 import net.azisaba.simplequest.party.PartyImpl
 import net.azisaba.simplequest.party.PartyManager
+import net.azisaba.simplequest.registry.DomainQuestTypes
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -65,6 +67,78 @@ private val simpleQuestCommand =
                 } else {
                     sender.sendMessage(Component.text("§cPlayer only command"))
                 }
+            }
+
+            "grant" -> {
+                if (!sender.hasPermission("simplequest.grant")) {
+                    sender.sendMessage(Component.text("§cYou don't have permission."))
+                    return@BasicCommand
+                }
+                if (args.size < 3) {
+                    sender.sendMessage(Component.text("§cUsage: /simplequest grant <player> <questType>"))
+                    return@BasicCommand
+                }
+                val player = Bukkit.getPlayer(args[1])
+                if (player == null) {
+                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
+                    return@BasicCommand
+                }
+                val questKey = args[2]
+                val type = DomainQuestTypes.get(questKey)
+                if (type == null) {
+                    sender.sendMessage(Component.text("§cQuest type not found: $questKey"))
+                    return@BasicCommand
+                }
+                SimpleQuest.plugin.questService.grantQuest(player.uniqueId.toString(), questKey)
+                sender.sendMessage(Component.text("§aGranted §e$questKey §ato §e${player.name}"))
+            }
+
+            "revoke" -> {
+                if (!sender.hasPermission("simplequest.revoke")) {
+                    sender.sendMessage(Component.text("§cYou don't have permission."))
+                    return@BasicCommand
+                }
+                if (args.size < 3) {
+                    sender.sendMessage(Component.text("§cUsage: /simplequest revoke <player> <questType>"))
+                    return@BasicCommand
+                }
+                val player = Bukkit.getPlayer(args[1])
+                if (player == null) {
+                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
+                    return@BasicCommand
+                }
+                val questKey = args[2]
+                SimpleQuest.plugin.questService.revokeQuest(player.uniqueId.toString(), questKey)
+                sender.sendMessage(Component.text("§aRevoked §e$questKey §afrom §e${player.name}"))
+            }
+
+            "progress" -> {
+                if (!sender.hasPermission("simplequest.progress")) {
+                    sender.sendMessage(Component.text("§cYou don't have permission."))
+                    return@BasicCommand
+                }
+                if (args.size < 4) {
+                    sender.sendMessage(Component.text("§cUsage: /simplequest progress <player> <reqKey> <formula>"))
+                    return@BasicCommand
+                }
+                val player = Bukkit.getPlayer(args[1])
+                if (player == null) {
+                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
+                    return@BasicCommand
+                }
+                val quest = SimpleQuest.plugin.questService.getQuestByPlayerId(player.uniqueId.toString())
+                if (quest == null) {
+                    sender.sendMessage(Component.text("§cPlayer has no active quest."))
+                    return@BasicCommand
+                }
+                val reqKey = args[2]
+                val formula = Formula.parse(args[3])
+                val current = quest.progresses[reqKey]
+                val newValue = formula.apply(current)
+                // Set progress to exact value (SET), or add delta
+                val delta = newValue - current
+                SimpleQuest.plugin.questService.updateProgress(quest, reqKey, delta)
+                sender.sendMessage(Component.text("§aProgress [$reqKey]: $current → $newValue"))
             }
 
             else -> {

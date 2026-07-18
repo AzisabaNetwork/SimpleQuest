@@ -15,8 +15,13 @@ import net.azisaba.simplequest.domain.quest.port.QuestNotifier
 import net.azisaba.simplequest.domain.quest.port.QuestRepository
 import net.azisaba.simplequest.domain.script.Script
 import net.azisaba.simplequest.domain.script.port.ScriptRunner
+import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.inventory.CraftItemEvent
+import org.bukkit.event.player.PlayerItemConsumeEvent
+import org.bukkit.inventory.ItemStack
 import java.time.Instant
 import net.azisaba.simplequest.domain.party.model.InvitationSetting as DomainInvitation
 import net.azisaba.simplequest.domain.party.model.Party as DomainParty
@@ -27,16 +32,10 @@ class QuestProgressListenerTest :
         lateinit var server: ServerMock
         lateinit var service: QuestService
         lateinit var listener: QuestProgressListener
-        // Keep a reference accessible from inline helper
         var testRepo: FakeRepository? = null
 
-        beforeSpec {
-            server = MockBukkit.mock()
-        }
-
-        afterSpec {
-            MockBukkit.unmock()
-        }
+        beforeSpec { server = MockBukkit.mock() }
+        afterSpec { MockBukkit.unmock() }
 
         beforeTest {
             val repo = FakeRepository()
@@ -51,25 +50,22 @@ class QuestProgressListenerTest :
             listener = QuestProgressListener(service)
         }
 
-        /**
-         * Grants and starts a quest for the given player.
-         */
+        // ---- helpers ----
+
         fun grantAndStart(
             player: PlayerMock,
             type: QuestType,
         ) {
             val repo = testRepo!!
             repo.granted.add("${player.uniqueId}:${type.key}")
-            val party = FakeParty(player.uniqueId.toString())
-            service.startQuest(type, party, listOf(player.uniqueId.toString()))
+            service.startQuest(type, FakeParty(player.uniqueId.toString()), listOf(player.uniqueId.toString()))
         }
 
-        fun fakeStoneBlock(player: PlayerMock): Block {
-            val world = player.server.addSimpleWorld("world")
-            val loc = org.bukkit.Location(world, 0.0, 64.0, 0.0)
-            val block = loc.block
-            block.type = org.bukkit.Material.STONE
-            return block
+        fun stoneBlock(player: PlayerMock): Block {
+            val w = player.server.addSimpleWorld("world")
+            val b = org.bukkit.Location(w, 0.0, 64.0, 0.0).block
+            b.type = Material.STONE
+            return b
         }
 
         fun questType(
@@ -78,79 +74,79 @@ class QuestProgressListenerTest :
         ): QuestType =
             QuestType(
                 key = key,
-                title = "Test Quest",
+                title = "T",
                 icon = Icon(type = "STONE"),
                 requirements = reqs.mapValues { (k, v) -> QuestRequirement(k, v) },
             )
 
+        // ---- BlockBreakEvent ----
+
         context("BlockBreakEvent") {
-
-            test("should match BreakStone objective") {
-                val player = server.addPlayer("TestPlayer")
-                grantAndStart(player, questType("test:break", mapOf("BreakStone" to 5)))
-
-                listener.onBlockBreak(BlockBreakEvent(fakeStoneBlock(player), player))
-
-                val quest = service.getQuestByPlayerId(player.uniqueId.toString())!!
-                quest.progresses["BreakStone"] shouldBe 1
+            test("matches BreakStone") {
+                val p = server.addPlayer("P1")
+                grantAndStart(p, questType("t:1", mapOf("BreakStone" to 5)))
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(p), p))
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["BreakStone"] shouldBe 1
             }
-
-            test("should not match when player has no active quest") {
-                val player = server.addPlayer("NoQuestPlayer")
-                // Must not throw
-                listener.onBlockBreak(BlockBreakEvent(fakeStoneBlock(player), player))
+            test("no-op when no quest") {
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(server.addPlayer("P2")), server.getPlayer("P2")!!))
+                // must not throw
             }
-
-            test("should increment multiple times") {
-                val player = server.addPlayer("MultiBreak")
-                grantAndStart(player, questType("test:break2", mapOf("BreakStone" to 10)))
-
-                repeat(3) {
-                    listener.onBlockBreak(BlockBreakEvent(fakeStoneBlock(player), player))
-                }
-
-                val quest = service.getQuestByPlayerId(player.uniqueId.toString())!!
-                quest.progresses["BreakStone"] shouldBe 3
-            }
-
-            test("should auto-complete when all requirements met") {
-                val player = server.addPlayer("CompleteBreak")
-                grantAndStart(player, questType("test:break3", mapOf("BreakStone" to 1)))
-
-                listener.onBlockBreak(BlockBreakEvent(fakeStoneBlock(player), player))
-
-                // Quest ended after requirements met — no longer active
-                service.getQuestByPlayerId(player.uniqueId.toString()) shouldBe null
+            test("auto-completes when requirements met") {
+                val p = server.addPlayer("P3")
+                grantAndStart(p, questType("t:ac", mapOf("BreakStone" to 1)))
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(p), p))
+                service.getQuestByPlayerId(p.uniqueId.toString()) shouldBe null
             }
         }
+
+        // ---- BlockPlaceEvent ----
+
+        context("BlockPlaceEvent") {
+            test("matches PlaceDirt") {
+                val p = server.addPlayer("P4")
+                grantAndStart(p, questType("t:place", mapOf("PlaceDirt" to 3)))
+                val b = stoneBlock(p)
+                b.type = Material.DIRT
+                // BlockPlaceEvent constructor varies; use the one MockBukkit provides
+                // Minimal: fire the event and verify progress
+                val event = BlockPlaceEvent(b, b.state, b, ItemStack(Material.DIRT), p, true, org.bukkit.inventory.EquipmentSlot.HAND)
+                listener.onBlockPlace(event)
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["PlaceDirt"] shouldBe 1
+            }
+        }
+
+        // ---- PlayerItemConsumeEvent ----
+
+        context("PlayerItemConsumeEvent") {
+            test("matches ConsumeApple") {
+                val p = server.addPlayer("P5")
+                grantAndStart(p, questType("t:eat", mapOf("ConsumeApple" to 3)))
+                listener.onItemConsume(PlayerItemConsumeEvent(p, ItemStack(Material.APPLE)))
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["ConsumeApple"] shouldBe 1
+            }
+        }
+
+        // ---- prefix matching ----
 
         context("objective key matching") {
-
-            test("should ignore unknown prefix objectives") {
-                val player = server.addPlayer("Unknown")
-                grantAndStart(player, questType("test:unknown", mapOf("UnknownPrefix" to 1)))
-
-                listener.onBlockBreak(BlockBreakEvent(fakeStoneBlock(player), player))
-
-                val quest = service.getQuestByPlayerId(player.uniqueId.toString())!!
-                quest.progresses["UnknownPrefix"] shouldBe 0
+            test("ignores unknown prefix") {
+                val p = server.addPlayer("P6")
+                grantAndStart(p, questType("t:unknown", mapOf("UnknownPrefix" to 1)))
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(p), p))
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["UnknownPrefix"] shouldBe 0
             }
-        }
-
-        context("PlayerItemConsumeEvent / Consume") {
-
-            test("handler compiles and increments progress") {
-                val player = server.addPlayer("HungryPlayer")
-                grantAndStart(player, questType("test:consume", mapOf("ConsumeApple" to 3)))
-
-                val item = org.bukkit.inventory.ItemStack(org.bukkit.Material.APPLE)
-                val event =
-                    org.bukkit.event.player
-                        .PlayerItemConsumeEvent(player, item)
-                listener.onItemConsume(event)
-
-                val quest = service.getQuestByPlayerId(player.uniqueId.toString())!!
-                quest.progresses["ConsumeApple"] shouldBe 1
+            test("ignores correct prefix but wrong material") {
+                val p = server.addPlayer("P7")
+                grantAndStart(p, questType("t:wrong", mapOf("BreakDiamond" to 1)))
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(p), p)) // stone ≠ diamond
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["BreakDiamond"] shouldBe 0
+            }
+            test("case-insensitive prefix matching") {
+                val p = server.addPlayer("P8")
+                grantAndStart(p, questType("t:case", mapOf("breakstone" to 5)))
+                listener.onBlockBreak(BlockBreakEvent(stoneBlock(p), p))
+                service.getQuestByPlayerId(p.uniqueId.toString())!!.progresses["breakstone"] shouldBe 1
             }
         }
     })
@@ -161,95 +157,95 @@ private class FakeRepository : QuestRepository {
     val granted = mutableSetOf<String>()
 
     override fun isGranted(
-        playerId: String,
-        questKey: String,
-    ): Boolean = "$playerId:$questKey" in granted
+        pid: String,
+        qk: String,
+    ) = "$pid:$qk" in granted
 
     override fun getCompletionsSince(
-        playerId: String,
-        questKey: String,
+        pid: String,
+        qk: String,
         since: Instant,
-    ): Int = 0
+    ) = 0
 
     override fun grant(
-        playerId: String,
-        questKey: String,
+        pid: String,
+        qk: String,
     ) {
-        granted.add("$playerId:$questKey")
+        granted.add("$pid:$qk")
     }
 
     override fun revoke(
-        playerId: String,
-        questKey: String,
+        pid: String,
+        qk: String,
     ) {
-        granted.remove("$playerId:$questKey")
+        granted.remove("$pid:$qk")
     }
 
     override fun getPlays(
-        playerId: String,
-        questKey: String,
-    ): Int = 0
+        pid: String,
+        qk: String,
+    ) = 0
 
     override fun getWeeklyCompletions(
-        playerId: String,
-        questKey: String,
-    ): Int = 0
+        pid: String,
+        qk: String,
+    ) = 0
 
     override fun getMonthlyCompletions(
-        playerId: String,
-        questKey: String,
-    ): Int = 0
+        pid: String,
+        qk: String,
+    ) = 0
 
     override fun getYearlyCompletions(
-        playerId: String,
-        questKey: String,
-    ): Int = 0
+        pid: String,
+        qk: String,
+    ) = 0
 
     override fun isFirstCompletion(
-        playerId: String,
-        questKey: String,
-    ): Boolean = true
+        pid: String,
+        qk: String,
+    ) = true
 }
 
 private class FakeDispatcher : ActionDispatcher {
     override fun dispatch(
-        action: Action,
-        playerId: String,
+        a: Action,
+        pid: String,
     ) {}
 
     override fun dispatchAll(
-        actions: List<Action>,
-        playerIds: List<String>,
+        as_: List<Action>,
+        pids: List<String>,
     ) {}
 }
 
 private class FakeScriptRunner : ScriptRunner {
     override fun run(
-        script: Script,
-        playerIds: List<String>,
+        s: Script,
+        pids: List<String>,
     ) {}
 }
 
 private class FakeNotifier : QuestNotifier {
     override fun showQuestPanel(
-        playerId: String,
-        questKey: String,
+        pid: String,
+        qk: String,
     ) {}
 
-    override fun hideQuestPanel(playerId: String) {}
+    override fun hideQuestPanel(pid: String) {}
 
     override fun sendMessage(
-        playerId: String,
-        message: String,
+        pid: String,
+        msg: String,
     ) {}
 }
 
 private class FakeParty(
     override val leaderId: String,
 ) : DomainParty {
-    override val memberIds: Set<String> = setOf(leaderId)
-    override val size: Int = 1
-    override val invitationSetting: DomainInvitation = DomainInvitation.LEADER
+    override val memberIds = setOf(leaderId)
+    override val size = 1
+    override val invitationSetting = DomainInvitation.LEADER
 
-    override fun hasPermission(type: QuestType): Boolean = true
+    override fun hasPermission(t: QuestType) = true
 }

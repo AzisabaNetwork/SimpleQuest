@@ -22,7 +22,6 @@ import org.bukkit.event.player.PlayerFishEvent
 import org.bukkit.event.player.PlayerItemConsumeEvent
 import org.bukkit.event.player.PlayerShearEntityEvent
 import java.util.Locale
-import net.azisaba.simplequest.domain.quest.model.Quest as DomainQuest
 
 /**
  * Bridges Bukkit events to quest objective progress.
@@ -64,7 +63,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onBlockBreak(event: BlockBreakEvent) {
             updateProgressForPrefix(event.player, "Break") { key ->
-                matchesMaterial(key.removePrefix("Break"), event.block.type)
+                matchesMaterial(targetName(key, "Break"), event.block.type)
             }
         }
 
@@ -73,7 +72,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onBlockPlace(event: BlockPlaceEvent) {
             updateProgressForPrefix(event.player, "Place") { key ->
-                matchesMaterial(key.removePrefix("Place"), event.block.type)
+                matchesMaterial(targetName(key, "Place"), event.block.type)
             }
         }
 
@@ -83,7 +82,7 @@ class QuestProgressListener
         fun onEntityDeath(event: EntityDeathEvent) {
             val killer = event.entity.killer ?: return
             updateProgressForPrefix(killer, "Kill") { key ->
-                matchesEntityType(key.removePrefix("Kill"), event.entityType)
+                matchesEntityType(targetName(key, "Kill"), event.entityType)
             }
         }
 
@@ -94,7 +93,7 @@ class QuestProgressListener
             val player = event.entity as? Player ?: return
             val itemStack = event.item.itemStack
             updateProgressForPrefix(player, "Collect") { key ->
-                matchesMaterial(key.removePrefix("Collect"), itemStack.type)
+                matchesMaterial(targetName(key, "Collect"), itemStack.type)
             }
         }
 
@@ -105,7 +104,7 @@ class QuestProgressListener
             val player = event.whoClicked as? Player ?: return
             val result = event.recipe.result
             updateProgressForPrefix(player, "Craft") { key ->
-                matchesMaterial(key.removePrefix("Craft"), result.type)
+                matchesMaterial(targetName(key, "Craft"), result.type)
             }
         }
 
@@ -114,7 +113,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onItemConsume(event: PlayerItemConsumeEvent) {
             updateProgressForPrefix(event.player, "Consume") { key ->
-                matchesMaterial(key.removePrefix("Consume"), event.item.type)
+                matchesMaterial(targetName(key, "Consume"), event.item.type)
             }
         }
 
@@ -126,7 +125,7 @@ class QuestProgressListener
             if (event.state != PlayerFishEvent.State.CAUGHT_FISH) return
             val caught = event.caught ?: return
             updateProgressForPrefix(event.player, "Fish") { key ->
-                matchesEntityType(key.removePrefix("Fish"), caught.type)
+                matchesEntityType(targetName(key, "Fish"), caught.type)
             }
         }
 
@@ -135,7 +134,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onEnchantItem(event: EnchantItemEvent) {
             updateProgressForPrefix(event.enchanter, "Enchant") { key ->
-                matchesMaterial(key.removePrefix("Enchant"), event.item.type)
+                matchesMaterial(targetName(key, "Enchant"), event.item.type)
             }
         }
 
@@ -144,7 +143,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onFurnaceExtract(event: FurnaceExtractEvent) {
             updateProgressForPrefix(event.player, "Smelt") { key ->
-                matchesMaterial(key.removePrefix("Smelt"), event.itemType)
+                matchesMaterial(targetName(key, "Smelt"), event.itemType)
             }
         }
 
@@ -154,7 +153,7 @@ class QuestProgressListener
         fun onEntityBreed(event: EntityBreedEvent) {
             val player = event.breeder as? Player ?: return
             updateProgressForPrefix(player, "Breed") { key ->
-                matchesEntityType(key.removePrefix("Breed"), event.entity.type)
+                matchesEntityType(targetName(key, "Breed"), event.entity.type)
             }
         }
 
@@ -163,7 +162,7 @@ class QuestProgressListener
         @EventHandler(ignoreCancelled = true)
         fun onPlayerShear(event: PlayerShearEntityEvent) {
             updateProgressForPrefix(event.player, "Shear") { key ->
-                matchesEntityType(key.removePrefix("Shear"), event.entity.type)
+                matchesEntityType(targetName(key, "Shear"), event.entity.type)
             }
         }
 
@@ -188,13 +187,18 @@ class QuestProgressListener
 
             questService.updateProgress(quest, reqKey, 1)
 
-            // Auto-complete if all requirements met
             if (quest.progresses.isComplete) {
                 questService.endQuest(quest, EndReason.COMPLETE)
             }
         }
 
         // ---- Material/Entity matching utilities ----
+
+        /** Extracts the target name from [key] by removing [prefix] (case-insensitive). */
+        private fun targetName(
+            key: String,
+            prefix: String,
+        ): String = key.substring(prefix.length)
 
         private fun matchesMaterial(
             targetName: String,
