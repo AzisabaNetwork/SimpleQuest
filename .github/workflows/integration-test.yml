@@ -75,13 +75,13 @@ jobs:
 
           printf 'eula=true\n' > "$dir/eula.txt"
 
-          cat > "$dir/server.properties" << 'PROPS'
-          online-mode=false
-          server-port=25565
-          enable-rcon=true
-          rcon.port=25575
-          rcon.password=test
-          PROPS
+          printf '%s\n' \
+            "online-mode=false" \
+            "server-port=25565" \
+            "enable-rcon=true" \
+            "rcon.port=25575" \
+            "rcon.password=test" \
+            > "$dir/server.properties"
 
           # Copy plugin jar
           cp build/libs/*.jar "$dir/plugins/"
