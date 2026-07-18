@@ -29,6 +29,7 @@ object DatabaseModule {
                 idleTimeout = 30000
                 maxLifetime = 600000
                 connectionTimeout = 5000
+                initializationFailTimeout = -1
                 validate()
             }
         return HikariDataSource(hikariConfig)

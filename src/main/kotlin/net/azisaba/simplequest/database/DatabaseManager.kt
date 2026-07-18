@@ -42,6 +42,7 @@ class DatabaseManager
                         idleTimeout = 30000
                         maxLifetime = 600000
                         connectionTimeout = 5000
+                        initializationFailTimeout = -1
                         validate()
                     }
                 hikari = HikariDataSource(hikariConfig)

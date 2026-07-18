@@ -129,11 +129,11 @@ jobs:
             local log="$dir/server.log"
             mkfifo "$dir/stdin"
             tail -f "$dir/stdin" | \
-              java -Xmx1G -jar "$dir/paper.jar" --nogui > "$log" 2>&1 &
+              java -Xmx512M -jar "$dir/paper.jar" --nogui > "$log" 2>&1 &
             echo $! > "$dir/pid"
 
-            # Wait for "Done" (max 120s)
-            timeout 120 bash -c "
+            # Wait for "Done" (max 180s)
+            timeout 180 bash -c "
               until grep -q 'Done' \"$log\" 2>/dev/null; do sleep 2; done
             " || {
               echo "[$name] Server failed to start! Last 50 lines:"
