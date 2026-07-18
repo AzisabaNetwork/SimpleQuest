@@ -154,7 +154,8 @@ jobs:
           }
 
           start_server master
-          echo "=== Master server started successfully ==="
+          start_server slave
+          start_server readonly
 
       - name: Install bot dependencies
         working-directory: bots
