@@ -11,6 +11,7 @@ import net.azisaba.simplequest.di.BukkitModule
 import net.azisaba.simplequest.di.DaggerSimpleQuestComponent
 import net.azisaba.simplequest.di.SimpleQuestComponent
 import net.azisaba.simplequest.listener.PlayerListener
+import net.azisaba.simplequest.listener.QuestProgressListener
 import net.azisaba.simplequest.quest.QuestManager
 import net.azisaba.simplequest.registry.DomainQuestTypes
 import net.azisaba.simplequest.registry.QuestCategories
@@ -41,6 +42,8 @@ class SimpleQuest : JavaPlugin() {
         private set
     lateinit var simpleQuestLoader: SimpleQuestLoader
         private set
+    lateinit var questProgressListener: QuestProgressListener
+        private set
 
     override fun onEnable() {
         plugin = this
@@ -62,6 +65,7 @@ class SimpleQuest : JavaPlugin() {
         backupService = diComponent.backupService()
         discordWebhook = diComponent.discordWebhook()
         simpleQuestLoader = diComponent.simpleQuestLoader()
+        questProgressListener = diComponent.questProgressListener()
 
         runDatabaseDependentSetup()
         registerBuiltInCategories()
@@ -133,6 +137,10 @@ class SimpleQuest : JavaPlugin() {
     private fun registerListeners() {
         server.pluginManager.registerEvents(
             PlayerListener(questManager, syncService),
+            this,
+        )
+        server.pluginManager.registerEvents(
+            questProgressListener,
             this,
         )
     }

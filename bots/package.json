@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "npx tsx src/main.ts",
+    "quest": "npx tsx src/quest-scenario.ts",
     "screenshot": "npx tsx src/screenshot.ts"
   },
   "pnpm": {

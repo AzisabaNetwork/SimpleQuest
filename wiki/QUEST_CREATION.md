@@ -221,7 +221,11 @@ Requirements:
 
 ### Objectives（達成条件）
 
-クエスト完了に必要な目標です。
+クエスト完了に必要な目標です。Objective Key の命名規則に従うことで、
+プレイヤーの行動に応じて自動的に進捗が更新されます。
+
+> [!IMPORTANT]
+> Objective Key の命名規則と対応イベントの詳細は **[Objectives とイベントトリガー](quest/EVENTS_AND_OBJECTIVES.md)** を参照してください。
 
 ```yaml
 # 数値のみ: キー名がそのまま Mob 名/アイテム名として解釈される

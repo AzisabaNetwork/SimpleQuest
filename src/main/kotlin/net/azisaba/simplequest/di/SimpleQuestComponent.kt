@@ -11,6 +11,7 @@ import net.azisaba.simplequest.database.DiscordWebhook
 import net.azisaba.simplequest.database.MigrationRunner
 import net.azisaba.simplequest.database.SyncService
 import net.azisaba.simplequest.infrastructure.di.InfrastructureModule
+import net.azisaba.simplequest.listener.QuestProgressListener
 import net.azisaba.simplequest.quest.QuestManager
 
 /**
@@ -47,4 +48,6 @@ interface SimpleQuestComponent {
     fun discordWebhook(): DiscordWebhook
 
     fun simpleQuestLoader(): SimpleQuestLoader
+
+    fun questProgressListener(): QuestProgressListener
 }

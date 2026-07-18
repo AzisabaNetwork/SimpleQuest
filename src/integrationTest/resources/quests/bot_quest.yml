@@ -1,0 +1,28 @@
+BotQuest:
+  Title: "&aBot Integration Test Quest"
+  Description:
+    - "&7This quest is designed for bot-based integration testing."
+    - "&7Bots complete this quest to verify the full quest lifecycle."
+  Icon: "DIAMOND_PICKAXE"
+  Aura: false
+  Giver: "&eTest Automation"
+  Category: "lq:general"
+  Location: "world,0,64,0"
+  Options:
+    MaxParty: "1"
+    Limits:
+      Daily: 999
+      Lifetime: 9999
+  Objectives:
+    BreakStone: 5
+  Actions:
+    OnComplete:
+      - Type: Command
+        Params: "say % completed the bot integration test quest!"
+      - Type: Item
+        Params: "minecraft:diamond,1"
+  Scripts:
+    OnStart:
+      - "say Quest started — bot integration test"
+    OnComplete:
+      - "say Quest completed — bot integration test"

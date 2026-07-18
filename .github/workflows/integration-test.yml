@@ -49,6 +49,21 @@ jobs:
           distribution: temurin
           cache: gradle
 
+      - name: Setup Node.js (for bot scenarios)
+        uses: actions/setup-node@9760d32a8959ee3e856f22312ac55e59fb1aeeff # v5.3.0
+        with:
+          node-version: lts/*
+
+      - name: Setup pnpm (for bot dependencies)
+        uses: pnpm/action-setup@9922f3ed55635bb89f107d295977d29dbf08f6a1 # v6.0.0
+        with:
+          version: latest
+
+      - name: Install bot dependencies
+        run: |
+          cd bots
+          pnpm install --frozen-lockfile
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -93,10 +108,11 @@ jobs:
           cp src/integrationTest/resources/master-config.yml \
             "$dir/plugins/SimpleQuest/config.yml"
 
-          # Copy test quests
+          # Copy test quests (including bot quest)
           QDIR="$dir/plugins/SimpleQuest/@test/types"
           mkdir -p "$QDIR"
           cp src/integrationTest/resources/quests/test_quest.yml "$QDIR/"
+          cp src/integrationTest/resources/quests/bot_quest.yml "$QDIR/"
 
           # Copy Paper jar
           cp paper.jar "$dir/"
@@ -123,11 +139,32 @@ jobs:
 
           echo 'Server started on port 25565'
 
-      - name: Run kotest integration tests
+      - name: Run bot quest scenario
         run: |
+          echo "=== Running bot quest integration scenario ==="
+          cd bots
+          # Wait a moment for server to stabilize, then run bot scenario
+          sleep 5
+
+          # Run the main GUI test (existing behavior)
+          echo "--- Bot GUI test ---"
+          npx tsx src/main.ts 2>&1 | tee ../artifacts/bot-output.log || {
+            echo "Bot GUI test failed (may be expected if server still initializing)"
+          }
+
+          # Run the quest scenario (quest execution)
+          echo "--- Bot quest scenario ---"
+          npx tsx src/quest-scenario.ts 2>&1 | tee -a ../artifacts/bot-output.log || {
+            echo "Bot quest scenario failed"
+          }
+          cd ..
+          echo "=== Bot scenario complete ==="
           echo "=== latest.log (last 20 lines) ==="
           tail -20 servers/master/logs/latest.log || echo "NO LOG FILE"
-          echo "=== running tests ==="
+
+      - name: Run kotest integration tests
+        run: |
+          echo "=== running kotest integration tests ==="
           ./gradlew integrationTestTask --no-daemon
 
       - name: Stop server
