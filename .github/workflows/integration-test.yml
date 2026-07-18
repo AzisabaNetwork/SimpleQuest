@@ -79,7 +79,7 @@ jobs:
             dir="servers/$i"
             mkdir -p "$dir/plugins/SimpleQuest"
 
-            echo "eula=true" > "$dir/eula.txt"
+            printf 'eula=true\n' > "$dir/eula.txt"
 
             cat > "$dir/server.properties" << 'PROPS'
           online-mode=false
@@ -104,6 +104,9 @@ jobs:
 
             # Copy plugin jar
             cp build/libs/*.jar "$dir/plugins/"
+            echo "[$i] plugins directory:"
+            ls -la "$dir/plugins/"
+            echo "[$i] eula.txt: $(cat "$dir/eula.txt")"
 
             # Copy server config fixture
             SRC="src/integrationTest/resources/${i}-config.yml"
