@@ -20,32 +20,45 @@ class DatabaseManager
         private var exposedDb: Database? = null
 
         init {
-            connect()
+            try {
+                connect()
+            } catch (e: Exception) {
+                // Plugin can still load without a database connection.
+                // DB-dependent features (sync, migrations, progress persistence) will be skipped.
+                System.err.println("[SimpleQuest] Failed to connect to database: ${e.message}")
+                System.err.println("[SimpleQuest] DB-dependent features are disabled.")
+            }
         }
 
-        fun connect(): Database {
-            val hikariConfig =
-                HikariConfig().apply {
-                    jdbcUrl = "jdbc:mariadb://${config.host}:${config.port}/${config.name}"
-                    username = config.user
-                    password = config.password
-                    maximumPoolSize = 10
-                    minimumIdle = 2
-                    idleTimeout = 30000
-                    maxLifetime = 600000
-                    connectionTimeout = 5000
-                    validate()
-                }
-            hikari = HikariDataSource(hikariConfig)
-            // Pass ExposedConnectionImpl directly to bypass ServiceLoader.
-            // ServiceLoader can fail in Paper PluginClassLoader when Exposed is relocated.
-            exposedDb =
-                Database.connect(
-                    datasource = hikari!!,
-                    connectionAutoRegistration = ExposedConnectionImpl(),
-                )
-            return exposedDb!!
-        }
+        fun connect(): Database? =
+            try {
+                val hikariConfig =
+                    HikariConfig().apply {
+                        jdbcUrl = "jdbc:mariadb://${config.host}:${config.port}/${config.name}"
+                        username = config.user
+                        password = config.password
+                        maximumPoolSize = 10
+                        minimumIdle = 2
+                        idleTimeout = 30000
+                        maxLifetime = 600000
+                        connectionTimeout = 5000
+                        validate()
+                    }
+                hikari = HikariDataSource(hikariConfig)
+                // Pass ExposedConnectionImpl directly to bypass ServiceLoader.
+                // ServiceLoader can fail in Paper PluginClassLoader when Exposed is relocated.
+                exposedDb =
+                    Database.connect(
+                        datasource = hikari!!,
+                        connectionAutoRegistration = ExposedConnectionImpl(),
+                    )
+                exposedDb
+            } catch (e: Exception) {
+                hikari?.close()
+                hikari = null
+                exposedDb = null
+                throw e
+            }
 
         fun disconnect() {
             hikari?.close()

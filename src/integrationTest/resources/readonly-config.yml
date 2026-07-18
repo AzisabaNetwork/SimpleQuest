@@ -1,0 +1,32 @@
+# ReadOnly server — read-only access to quest definitions
+database:
+  host: localhost
+  port: 3306
+  name: simplequest
+  user: root
+  password: test
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+
+maxPartySize: 8
+partyInviteLimit: 1200
+
+panel:
+  title: "&dSimpleQuest [ReadOnly]"
+  footer: "&7azisaba.net"
+
+multi-server:
+  write-to-mysql: false
+  write-to-yaml: false
+  conflict-mode: LOCAL
+  backup:
+    enabled: false
+    interval-hours: 24
+    retention-days: 30
+    directory: "plugins/SimpleQuest/backups/"
+
+discord:
+  webhook-url: ""

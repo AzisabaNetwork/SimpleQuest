@@ -63,11 +63,11 @@ class SimpleQuest : JavaPlugin() {
         discordWebhook = diComponent.discordWebhook()
         simpleQuestLoader = diComponent.simpleQuestLoader()
 
-        migrationRunner.run()
+        runDatabaseDependentSetup()
         registerBuiltInCategories()
         loadQuestDefinitions()
         registerListeners()
-        backupService.start()
+        startBackupIfConnected()
         logger.info("SimpleQuest enabled.")
     }
 
@@ -107,6 +107,27 @@ class SimpleQuest : JavaPlugin() {
             return
         }
         simpleQuestLoader.loadAll(dataFolder)
+    }
+
+    /**
+     * Runs DB-dependent setup (migrations).
+     * If the database is unavailable, these steps are skipped and the plugin
+     * continues with limited functionality (quests loaded from YAML only).
+     */
+    private fun runDatabaseDependentSetup() {
+        try {
+            migrationRunner.run()
+        } catch (e: Exception) {
+            logger.warning("Database migration skipped (DB unavailable): ${e.message}")
+        }
+    }
+
+    private fun startBackupIfConnected() {
+        if (databaseManager.isConnected) {
+            backupService.start()
+        } else {
+            logger.info("Backup service skipped (DB unavailable).")
+        }
     }
 
     private fun registerListeners() {

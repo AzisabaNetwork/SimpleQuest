@@ -30,19 +30,23 @@ class SyncService
         val hasConflicts: Boolean get() = conflictedKeys.isNotEmpty()
 
         fun sync(dataFolder: File) {
-            conflictedKeys.clear()
-            val localFiles = scanYamlFiles(dataFolder)
+            try {
+                conflictedKeys.clear()
+                val localFiles = scanYamlFiles(dataFolder)
 
-            if (writeToMysql) pushLocalToMysql(localFiles)
-            if (writeToYaml) pullMysqlToLocal(localFiles, dataFolder)
+                if (writeToMysql) pushLocalToMysql(localFiles)
+                if (writeToYaml) pullMysqlToLocal(localFiles, dataFolder)
 
-            databaseHelper.query("SELECT quest_key, conflict FROM quest_definitions") { rs ->
-                while (rs.next()) {
-                    if (rs.getBoolean("conflict")) conflictedKeys.add(rs.getString("quest_key"))
+                databaseHelper.query("SELECT quest_key, conflict FROM quest_definitions") { rs ->
+                    while (rs.next()) {
+                        if (rs.getBoolean("conflict")) conflictedKeys.add(rs.getString("quest_key"))
+                    }
                 }
-            }
 
-            logger.info("Sync completed. ${conflictedKeys.size} conflict(s) detected.")
+                logger.info("Sync completed. ${conflictedKeys.size} conflict(s) detected.")
+            } catch (e: Exception) {
+                logger.warning("Sync skipped (DB unavailable): ${e.message}")
+            }
         }
 
         fun resolveUseLocal() {

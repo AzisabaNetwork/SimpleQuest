@@ -22,6 +22,11 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
+val integrationTest by sourceSets.creating {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += output + compileClasspath
+}
+
 dependencies {
     // Paper
     compileOnly(libs.paper.api)
@@ -75,11 +80,21 @@ dependencies {
 
     // GUI (compileOnly — must be installed on server)
     compileOnly(libs.kunectron)
+
+    // Integration test
+    add("integrationTestImplementation", libs.kotest.runner)
+    add("integrationTestImplementation", libs.kotest.assertions)
+    add("integrationTestImplementation", libs.kotest.framework)
+    add("integrationTestImplementation", libs.mariadb)
+    add("integrationTestImplementation", libs.lettuce.core)
+    add("integrationTestImplementation", libs.h2)
 }
 
 tasks {
-    compileKotlin {
-        compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions.jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21,
+        )
     }
 
     shadowJar {
@@ -106,5 +121,29 @@ tasks {
 
     test {
         useJUnitPlatform()
+    }
+
+    val integrationTestTask by registering(Test::class) {
+        description =
+            "Runs integration tests (requires running Paper servers)"
+        group = "verification"
+        testClassesDirs = integrationTest.output.classesDirs
+        classpath = integrationTest.runtimeClasspath
+
+        // Only run in CI
+        onlyIf { System.getenv("CI") == "true" }
+
+        useJUnitPlatform()
+
+        // Environment variables for server connectivity
+        environment("MASTER_PORT", "25565")
+        environment("SLAVE_PORT", "25566")
+        environment("READONLY_PORT", "25567")
+        environment("RCON_PASSWORD", "test")
+        environment("MARIADB_URL", "jdbc:mariadb://localhost:3306/simplequest")
+        environment("MARIADB_USER", "root")
+        environment("MARIADB_PASSWORD", "test")
+        environment("REDIS_HOST", "localhost")
+        environment("REDIS_PORT", "6379")
     }
 }

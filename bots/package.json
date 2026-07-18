@@ -1,0 +1,19 @@
+{
+  "name": "simplequest-integration-bots",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npx tsx src/main.ts",
+    "screenshot": "npx tsx src/screenshot.ts"
+  },
+  "dependencies": {
+    "mineflayer": "^4.34.0",
+    "prismarine-viewer": "^1.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "puppeteer": "^22.15.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0"
+  }
+}
