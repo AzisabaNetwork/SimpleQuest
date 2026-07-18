@@ -99,6 +99,7 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
         // Relocate dependencies to avoid conflicts with other plugins
         relocate("org.jetbrains.exposed", "net.azisaba.simplequest.shaded.exposed")

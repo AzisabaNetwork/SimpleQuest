@@ -111,7 +111,7 @@ jobs:
 
           # Wait for "Done" (max 180s)
           timeout 180 bash -c "
-            until grep -q 'Done' \"$log\" 2>/dev/null; do
+            until grep -q 'Done(' \"$log\" 2>/dev/null; do
               sleep 2
             done
           " || {
