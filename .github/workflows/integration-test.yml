@@ -135,7 +135,7 @@ jobs:
         run: |
           dir="servers/master"
           if [ -f "$dir/pid" ]; then
-            kill \$(cat "$dir/pid") 2>/dev/null || true
+            kill $(cat "$dir/pid") 2>/dev/null || true
             echo "Server stopped"
           fi
           cp "$dir/logs/latest.log" artifacts/latest.log || true

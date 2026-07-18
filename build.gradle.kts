@@ -99,17 +99,8 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-        // Relocate dependencies to avoid conflicts with other plugins
-        relocate("org.jetbrains.exposed", "net.azisaba.simplequest.shaded.exposed")
-        relocate("com.charleskorn.kaml", "net.azisaba.simplequest.shaded.kaml")
-        relocate("org.flywaydb", "net.azisaba.simplequest.shaded.flyway")
-        relocate("io.ktor", "net.azisaba.simplequest.shaded.ktor")
-        relocate("io.lettuce", "net.azisaba.simplequest.shaded.lettuce")
-
-        // Merge META-INF/services files and relocate class names inside them.
-        // Required for Exposed (DatabaseConnectionAutoRegistration) and Flyway (Java ServiceLoader).
+        // Merge META-INF/services files
         mergeServiceFiles()
 
         // Exclude signature files that cause issues in fat JARs
