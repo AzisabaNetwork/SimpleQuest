@@ -104,30 +104,29 @@ jobs:
       - name: Start server
         run: |
           dir="servers/master"
-          log="$dir/server.log"
 
-          mkfifo "$dir/stdin"
-          tail -f "$dir/stdin" | \
-            (cd "$dir" && java -Xmx1G -jar paper.jar --nogui) > "$log" 2>&1 &
-          echo $! > "$dir/pid"
+          cd "$dir"
+          java -Xmx1G -jar paper.jar --nogui &
+          echo $! > pid
+          cd "$OLDPWD"
 
-          # Wait for "Done" (max 180s)
+          # Wait for "Done" via tail -f on Paper's actual log file
           timeout 180 bash -c "
-            until grep -q 'Done(' \"$log\" 2>/dev/null; do
+            until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done'; do
               sleep 2
             done
           " || {
-            echo "Server failed to start! Last 50 lines:"
-            tail -50 "$log"
+            echo 'Server failed to start! Last 50 lines:'
+            tail -50 $dir/logs/latest.log
             exit 1
           }
 
-          echo "Server started on port 25565"
+          echo 'Server started on port 25565'
 
       - name: Run kotest integration tests
         run: |
-          echo "=== server log (last 20 lines) ==="
-          tail -20 servers/master/server.log || echo "NO LOG FILE"
+          echo "=== latest.log (last 20 lines) ==="
+          tail -20 servers/master/logs/latest.log || echo "NO LOG FILE"
           echo "=== running tests ==="
           ./gradlew integrationTestTask --no-daemon
 
@@ -135,17 +134,11 @@ jobs:
         if: always()
         run: |
           dir="servers/master"
-          if [ -d "$dir" ]; then
-            echo "stop" > "$dir/stdin"
-            timeout 30 bash -c "
-              while kill -0 \$(cat $dir/pid) 2>/dev/null; do
-                sleep 1
-              done
-            " || true
+          if [ -f "$dir/pid" ]; then
+            kill \$(cat "$dir/pid") 2>/dev/null || true
             echo "Server stopped"
-            cp "$dir/server.log" artifacts/server.log || true
-            cp "$dir/logs/latest.log" artifacts/latest.log || true
           fi
+          cp "$dir/logs/latest.log" artifacts/latest.log || true
 
       - name: Upload artifacts
         if: always()

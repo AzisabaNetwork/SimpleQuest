@@ -16,7 +16,7 @@ import java.nio.file.Path
  */
 class SimpleQuestIntegrationTest : FunSpec() {
     private val logPath =
-        Path.of(System.getenv("SERVER_LOG") ?: "servers/master/server.log")
+        Path.of(System.getenv("SERVER_LOG") ?: "servers/master/logs/latest.log")
 
     private fun logLines(): List<String> =
         if (logPath.toFile().exists()) {
