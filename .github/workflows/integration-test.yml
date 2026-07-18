@@ -66,12 +66,14 @@ jobs:
         run: |
           mkdir -p artifacts
 
-          # Download Paper 1.21.11
-          API="https://api.papermc.io/v2/projects/paper"
-          BUILD=$(curl -fsSL "$API/versions/1.21.11" | jq -r '.builds[-1]')
-          JAR="paper-1.21.11-${BUILD}.jar"
-          curl -fsSL -o paper.jar \
-            "$API/versions/1.21.11/builds/${BUILD}/downloads/${JAR}"
+          # Download Paper 1.21.11 (latest stable)
+          API="https://fill.papermc.io/v3/projects/paper"
+          UA="SimpleQuest-CI/1.0"
+          URL=$(curl -fsSL -H "User-Agent: $UA" \
+            "$API/versions/1.21.11/builds" | \
+            jq -r '[.[] | select(.channel == "STABLE")] | last
+              | .downloads["server:default"].url')
+          curl -fsSL -H "User-Agent: $UA" -o paper.jar "$URL"
 
           for i in master slave readonly; do
             dir="servers/$i"
