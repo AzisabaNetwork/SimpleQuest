@@ -6,7 +6,7 @@
       "versioning": "always-bump-patch",
       "extra-files": [
         {
-          "type": "gradle",
+          "type": "generic",
           "path": "build.gradle.kts",
           "pattern": "version = \"$version\""
         }
