@@ -3,6 +3,7 @@
     ".": {
       "release-type": "simple",
       "changelog-path": "CHANGELOG.md",
+      "versioning": "always-bump-patch",
       "extra-files": [
         {
           "type": "gradle",
