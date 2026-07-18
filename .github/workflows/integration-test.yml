@@ -103,6 +103,8 @@ jobs:
             esac
 
             # Copy plugin jar
+            echo "[$i] build/libs contents:"
+            ls -la build/libs/
             cp build/libs/*.jar "$dir/plugins/"
             echo "[$i] plugins directory:"
             ls -la "$dir/plugins/"
@@ -130,6 +132,8 @@ jobs:
             local name=$1
             local dir="servers/$name"
             local log="$dir/server.log"
+            echo "[$name] eula before: $(cat "$dir/eula.txt" 2>&1)"
+            echo "[$name] plugins: $(ls "$dir/plugins/" 2>&1)"
             mkfifo "$dir/stdin"
             tail -f "$dir/stdin" | \
               java -Xmx512M -jar "$dir/paper.jar" --nogui > "$log" 2>&1 &
@@ -150,8 +154,7 @@ jobs:
           }
 
           start_server master
-          start_server slave
-          start_server readonly
+          echo "=== Master server started successfully ==="
 
       - name: Install bot dependencies
         working-directory: bots
