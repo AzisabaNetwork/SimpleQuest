@@ -1,105 +1,65 @@
 # コマンド一覧
 
-## /simplequest (管理コマンド)
+## `/simplequest` (管理コマンド)
 
 Paper Brigadier を使用して実装。
 
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
-| `debug` | `simplequest.debug` | GUI デバッグ表示 |
-| `grant <targets> <type>` | `simplequest.grant` | プレイヤーに QuestType を解放 |
-| `progress <target> <requirement> <formula>` | `simplequest.progress` | クエスト進捗を変更 |
-| `reload` | `simplequest.reload` | 設定・名前空間を再読み込み (DB 再接続含む) |
-| `revoke <targets> <type>` | `simplequest.revoke` | プレイヤーから QuestType を剥奪 |
-| `stage mount <targets> <stage>` | `simplequest.stage` | パーティをステージにマウント |
-| `stage unmount <targets> <stage>` | `simplequest.stage` | パーティをステージからアンマウント |
+| _(なし)_ | — | バージョン表示 |
+| `reload [--use-local\|--use-mysql]` | `simplequest.reload` | 設定・名前空間を再読み込み (DB 再接続含む) |
+| `quest` / `gui` | — | クエスト選択 GUI |
+| `party` | — | パーティ管理 GUI |
+| `grant <player> <questType>` | `simplequest.grant` | プレイヤーに QuestType を解放 |
+| `revoke <player> <questType>` | `simplequest.revoke` | プレイヤーから QuestType を剥奪 |
+| `progress <player> <reqKey> <formula>` | `simplequest.progress` | クエスト進捗を変更 |
 
 ### grant / revoke
 
 ```shell
-/simplequest grant @p lq:example
-/simplequest revoke @p lq:example
+/simplequest grant <player> <questType>
+/simplequest revoke <player> <questType>
 ```
 
-- `targets` は Player セレクター
-- 既に解放済みのプレイヤーはスキップ
-- 変更があったプレイヤーのみメッセージ表示
+- `player`: プレイヤー名（オンライン / オフライン両対応）
+- `questType`: クエストキー（例: `BotQuest`, `@test/party_quest`）
+- 既に解放済みのプレイヤーはスキップ（idempotent）
 
 ### progress
 
 ```shell
-/simplequest progress @p requirement1 +2
-/simplequest progress @p requirement1 "=10"
-/simplequest progress @p requirement1 "*3"
+/simplequest progress <player> <reqKey> <formula>
 ```
 
-**FormulaArgumentType — 数式パーサ**
+- `player`: プレイヤー名（オンライン必須）
+- `reqKey`: Objective キー名（例: `BreakStone`）
+- `formula`: 数式（`+2`, `-1`, `*3`, `/2`, `=10`）
 
-| 演算子 | 意味 | 例 (`base=5`) | 結果 |
-|---|---|---|---|
-| `+` | 加算 | `+2` | 7 |
-| `-` | 減算 | `-3` | 2 |
-| `*` | 乗算 | `*5` | 25 |
-| `/` | 除算 | `/2` | 2 |
-| `=` | (デフォルト) 代入 | `=10` / `10` | 10 |
+**Formula:**
 
-- 演算子を省略した場合、`=` (代入) として扱われる
-- ダブルクォートで囲むことが推奨 (`"*2"`)
+| 演算子 | 例 | 説明 |
+|---|---|---|
+| `+` | `+2` | 加算 |
+| `-` | `-3` | 減算 |
+| `*` | `*5` | 乗算 |
+| `/` | `/2` | 除算 |
+| `=` | `=10` / `10` | 代入（デフォルト） |
 
-### stage mount / unmount
-
-```shell
-/simplequest stage mount @p namespace:boss_arena
-/simplequest stage unmount @p namespace:boss_arena
-```
-
-- マウント: パーティがキューに追加される (空きがあれば即時マウント)
-- アンマウント: パーティがステージから離脱、キュー先頭が自動マウント
-
-## /party (プレイヤーコマンド)
-
-変更なし。
+## `/party` (プレイヤーコマンド)
 
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
-| `invite <target>` | 全プレイヤー (招待権限必要) | プレイヤーを招待 |
+| `invite <player>` | 全プレイヤー | プレイヤーを招待 |
 | `accept <uuid>` | 全プレイヤー | 招待を承諾 |
-| `kick <target>` | リーダーのみ | メンバーをキック |
-
-### invite
-
-```shell
-/party invite <player>
-```
-
-- パーティ未所属・招待権限がない場合はエラー
-- 既に招待済みのプレイヤーはスキップ
-
-### accept
-
-```shell
-/party accept <uuid>
-```
-
-- UUID は招待時に表示された ClickEvent から自動入力される
-- 招待がない、または自分宛てでない場合はエラー
-
-### kick
-
-```shell
-/party kick <player>
-```
-
-- リーダーのみ実行可能
-- 自分自身やリーダーをキックすることは不可
+| `kick <player>` | リーダーのみ | メンバーをキック |
 
 ## 権限一覧
 
 | 権限 | デフォルト | 用途 |
 |---|---|---|
-| `simplequest.debug` | op | デバッグ GUI |
-| `simplequest.grant` | op | QuestType 解放 |
-| `simplequest.progress` | op | 進捗変更 |
 | `simplequest.reload` | op | リロード |
+| `simplequest.grant` | op | QuestType 解放 |
 | `simplequest.revoke` | op | QuestType 剥奪 |
-| `simplequest.stage` | op | ステージ管理 |
+| `simplequest.progress` | op | 進捗変更 |
+| `simplequest.stage` | op | ステージ管理（将来実装） |
+| `simplequest.debug` | op | デバッグ GUI（将来実装） |
