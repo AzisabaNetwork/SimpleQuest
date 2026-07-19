@@ -7,6 +7,7 @@ Paper Brigadier を使用して実装。
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
 | _(なし)_ | — | バージョン表示 |
+| `help` | — | コマンド一覧を表示 |
 | `reload [--use-local\|--use-mysql]` | `simplequest.reload` | 設定・名前空間を再読み込み (DB 再接続含む) |
 | `quest` / `gui` | — | クエスト選択 GUI |
 | `party` | — | パーティ管理 GUI |

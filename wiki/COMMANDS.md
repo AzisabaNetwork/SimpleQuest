@@ -5,6 +5,7 @@
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
 | _(引数なし)_ | — | プラグインのバージョン情報を表示 |
+| `help` | — | コマンド一覧（このヘルプ）を表示 |
 | `reload [--use-local\|--use-mysql]` | `simplequest.reload` | 設定・クエスト定義を再読み込み |
 | `quest` / `gui` | — | クエスト選択 GUI を開く（プレイヤーのみ） |
 | `party` | — | パーティ管理 GUI を開く（プレイヤーのみ） |
@@ -171,6 +172,11 @@
 | `simplequest.progress` | op | `/simplequest progress` |
 | `simplequest.stage` | op | ステージ管理（将来実装） |
 | `simplequest.debug` | op | デバッグ GUI（将来実装） |
+
+> [!NOTE]
+> 一般コマンド（`/simplequest quest`, `/party invite` 等）に権限は不要です。
+> 全プレイヤーがデフォルトで使用できます。
+| デバッグ GUI（将来実装） |
 
 > [!NOTE]
 > 一般コマンド（`/simplequest quest`, `/party invite` 等）に権限は不要です。
