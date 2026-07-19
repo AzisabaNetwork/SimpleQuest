@@ -1,6 +1,7 @@
 package net.azisaba.simplequest
 
 import net.azisaba.simplequest.application.quest.QuestService
+import net.azisaba.simplequest.command.Formula
 import net.azisaba.simplequest.data.SimpleQuestConfig
 import net.azisaba.simplequest.database.BackupService
 import net.azisaba.simplequest.database.DatabaseManager
@@ -10,17 +11,25 @@ import net.azisaba.simplequest.database.SyncService
 import net.azisaba.simplequest.di.BukkitModule
 import net.azisaba.simplequest.di.DaggerSimpleQuestComponent
 import net.azisaba.simplequest.di.SimpleQuestComponent
+import net.azisaba.simplequest.gui.PartyMenuGui
 import net.azisaba.simplequest.listener.PlayerListener
 import net.azisaba.simplequest.listener.QuestProgressListener
+import net.azisaba.simplequest.party.InviteManager
+import net.azisaba.simplequest.party.PartyImpl
+import net.azisaba.simplequest.party.PartyManager
 import net.azisaba.simplequest.quest.QuestManager
 import net.azisaba.simplequest.registry.DomainQuestTypes
 import net.azisaba.simplequest.registry.QuestCategories
+import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
+import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.incendo.cloud.execution.ExecutionCoordinator
+import org.incendo.cloud.paper.LegacyPaperCommandManager
+import org.incendo.cloud.parser.standard.StringParser
+import net.azisaba.simplequest.gui.QuestGui as QuestGuiObj
 
-/**
- * Main plugin entry point.
- * Initializes the Dagger DI component and delegates to injected services.
- */
 class SimpleQuest : JavaPlugin() {
     lateinit var diComponent: SimpleQuestComponent
         private set
@@ -48,14 +57,7 @@ class SimpleQuest : JavaPlugin() {
     override fun onEnable() {
         plugin = this
         saveDefaultConfig()
-
-        // Initialize Dagger DI
-        diComponent =
-            DaggerSimpleQuestComponent
-                .builder()
-                .bukkitModule(BukkitModule(this))
-                .build()
-
+        diComponent = DaggerSimpleQuestComponent.builder().bukkitModule(BukkitModule(this)).build()
         configData = diComponent.configData()
         databaseManager = diComponent.databaseManager()
         questManager = diComponent.questManager()
@@ -66,10 +68,10 @@ class SimpleQuest : JavaPlugin() {
         discordWebhook = diComponent.discordWebhook()
         simpleQuestLoader = diComponent.simpleQuestLoader()
         questProgressListener = diComponent.questProgressListener()
-
         runDatabaseDependentSetup()
         registerBuiltInCategories()
         loadQuestDefinitions()
+        registerCommands()
         registerListeners()
         startBackupIfConnected()
         logger.info("SimpleQuest enabled.")
@@ -82,8 +84,202 @@ class SimpleQuest : JavaPlugin() {
         logger.info("SimpleQuest disabled.")
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun registerCommands() {
+        val mgr = LegacyPaperCommandManager.createNative(this, ExecutionCoordinator.simpleCoordinator())
+        try {
+            mgr.registerBrigadier()
+        } catch (_: Exception) {
+        }
+        val str = StringParser.stringParser<CommandSender>()
+
+        fun cmd(vararg parts: String) = mgr.commandBuilder(parts.first(), *parts.drop(1).toTypedArray())
+
+        // /simplequest
+        mgr.command(
+            cmd("simplequest")
+                .handler { ctx -> ctx.sender().sendMessage(Component.text("§6SimpleQuest §7v${description.version}")) },
+        )
+
+        // /simplequest reload
+        mgr.command(
+            cmd("simplequest", "reload")
+                .permission("simplequest.reload")
+                .handler { ctx ->
+                    val raw = ctx.rawInput().input()
+                    reloadPlugin(raw.contains("--use-local"), raw.contains("--use-mysql"))
+                    ctx.sender().sendMessage(
+                        if (syncService.hasConflicts) {
+                            Component.text("§cConflicts remain!")
+                        } else {
+                            Component.text("§aSimpleQuest reloaded.")
+                        },
+                    )
+                },
+        )
+
+        // /simplequest quest / gui
+        mgr.command(
+            cmd("simplequest", "quest")
+                .handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } },
+        )
+        mgr.command(
+            cmd("simplequest", "gui")
+                .handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } },
+        )
+
+        // /simplequest party
+        mgr.command(
+            cmd("simplequest", "party")
+                .handler { ctx -> playerOnly(ctx.sender()) { PartyMenuGui.open(it) } },
+        )
+
+        // /simplequest grant
+        mgr.command(
+            cmd("simplequest", "grant")
+                .permission("simplequest.grant")
+                .required("player", str)
+                .required("questType", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questType")
+                    if (DomainQuestTypes.get(qk) == null) {
+                        ctx.sender().sendMessage(Component.text("§cQuest not found: $qk"))
+                        return@handler
+                    }
+                    questService.grantQuest(resolvePlayerId(ctx.get("player")), qk)
+                    ctx.sender().sendMessage(Component.text("§aGranted §e$qk §ato §e${ctx.get<String>("player")}"))
+                },
+        )
+
+        // /simplequest revoke
+        mgr.command(
+            cmd("simplequest", "revoke")
+                .permission("simplequest.revoke")
+                .required("player", str)
+                .required("questType", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questType")
+                    questService.revokeQuest(resolvePlayerId(ctx.get("player")), qk)
+                    ctx.sender().sendMessage(Component.text("§aRevoked §e$qk §afrom §e${ctx.get<String>("player")}"))
+                },
+        )
+
+        // /simplequest progress
+        mgr.command(
+            cmd("simplequest", "progress")
+                .permission("simplequest.progress")
+                .required("player", str)
+                .required("reqKey", str)
+                .required("formula", str)
+                .handler { ctx ->
+                    val p =
+                        Bukkit.getPlayer(ctx.get<String>("player"))
+                            ?: run {
+                                ctx.sender().sendMessage(Component.text("§cPlayer not online."))
+                                return@handler
+                            }
+                    val q =
+                        questService.getQuestByPlayerId(p.uniqueId.toString())
+                            ?: run {
+                                ctx.sender().sendMessage(Component.text("§cNo active quest."))
+                                return@handler
+                            }
+                    val f = Formula.parse(ctx.get<String>("formula"))
+                    val cur = q.progresses[ctx.get<String>("reqKey")]
+                    val nv = f.apply(cur)
+                    questService.updateProgress(q, ctx.get<String>("reqKey"), nv - cur)
+                    ctx.sender().sendMessage(Component.text("§aProgress [${ctx.get<String>("reqKey")}]: $cur → $nv"))
+                },
+        )
+
+        // /party
+        mgr.command(
+            cmd("party").handler { ctx ->
+                ctx.sender().sendMessage(Component.text("§6/party invite <player> | accept <id> | kick <player>"))
+            },
+        )
+        mgr.command(
+            cmd("party", "invite")
+                .required("target", str)
+                .handler { ctx ->
+                    val s = ctx.sender() as? Player ?: return@handler
+                    val t =
+                        Bukkit.getPlayer(ctx.get<String>("target"))
+                            ?: run {
+                                s.sendMessage(Component.text("§cPlayer not found."))
+                                return@handler
+                            }
+                    if (t == s) {
+                        s.sendMessage(Component.text("§cCannot invite yourself."))
+                        return@handler
+                    }
+                    val party = PartyManager.getParty(s) ?: PartyImpl(s)
+                    PartyManager.setParty(s, party)
+                    val inv = InviteManager.instance.createInvite(party, s, t)
+                    t.sendMessage(Component.text("§e${s.name} §ainvited you!"))
+                    t.sendMessage(Component.text("§7/party accept ${inv.id}"))
+                    s.sendMessage(Component.text("§aInvited §e${t.name}"))
+                },
+        )
+        mgr.command(
+            cmd("party", "accept")
+                .required("id", str)
+                .handler { ctx ->
+                    val s = ctx.sender() as? Player ?: return@handler
+                    if (InviteManager.instance.acceptInvite(s, ctx.get("id"))) {
+                        s.sendMessage(Component.text("§aJoined party!"))
+                    } else {
+                        s.sendMessage(Component.text("§cInvalid or expired invite."))
+                    }
+                },
+        )
+        mgr.command(
+            cmd("party", "kick")
+                .required("target", str)
+                .handler { ctx ->
+                    val s = ctx.sender() as? Player ?: return@handler
+                    val party =
+                        PartyManager.getParty(s) as? PartyImpl ?: run {
+                            s.sendMessage(Component.text("§cNot in party."))
+                            return@handler
+                        }
+                    if (party.leader != s) {
+                        s.sendMessage(Component.text("§cLeader only."))
+                        return@handler
+                    }
+                    val t =
+                        Bukkit.getPlayer(ctx.get<String>("target"))
+                            ?: run {
+                                s.sendMessage(Component.text("§cPlayer not found."))
+                                return@handler
+                            }
+                    if (t !in party) {
+                        s.sendMessage(Component.text("§cNot in party."))
+                        return@handler
+                    }
+                    party.removeMember(t)
+                    t.sendMessage(Component.text("§cKicked."))
+                    s.sendMessage(Component.text("§aKicked §e${t.name}"))
+                },
+        )
+    }
+
+    private fun playerOnly(
+        sender: CommandSender,
+        action: (Player) -> Unit,
+    ) {
+        (sender as? Player)?.let(action) ?: sender.sendMessage(Component.text("§cPlayer only"))
+    }
+
+    private fun resolvePlayerId(nameOrUuid: String): String {
+        if (nameOrUuid.length == 36 && nameOrUuid.count { it == '-' } == 4) return nameOrUuid
+        Bukkit.getPlayer(nameOrUuid)?.let { return it.uniqueId.toString() }
+        @Suppress("DEPRECATION")
+        return Bukkit.getOfflinePlayer(nameOrUuid).uniqueId.toString()
+    }
+
     private fun registerBuiltInCategories() {
-        QuestCategories.entries.size // force init
+        QuestCategories.entries.size
     }
 
     fun reloadPlugin(
@@ -94,55 +290,33 @@ class SimpleQuest : JavaPlugin() {
         if (useLocal) syncService.resolveUseLocal()
         if (useMySql) syncService.resolveUseMySql(dataFolder)
         loadQuestDefinitions()
-        val conflicts = syncService.conflictedQuests()
-        if (conflicts.isNotEmpty()) {
-            logger.severe("Conflicts remain: $conflicts. Use --use-local or --use-mysql.")
-        } else {
-            logger.info("SimpleQuest reloaded.")
-        }
+        logger.info(if (syncService.hasConflicts) "Conflicts remain." else "SimpleQuest reloaded.")
     }
 
     private fun loadQuestDefinitions() {
         syncService.sync(dataFolder)
         if (syncService.hasConflicts) {
-            val msg = "Quest conflicts detected: ${syncService.conflictedQuests()}"
-            logger.warning(msg)
-            discordWebhook.sendError("Quest Conflict", "```$msg```", 0xFFA500)
+            logger.warning("Conflicts: ${syncService.conflictedQuests()}")
             return
         }
         simpleQuestLoader.loadAll(dataFolder)
     }
 
-    /**
-     * Runs DB-dependent setup (migrations).
-     * If the database is unavailable, these steps are skipped and the plugin
-     * continues with limited functionality (quests loaded from YAML only).
-     */
     private fun runDatabaseDependentSetup() {
         try {
             migrationRunner.run()
         } catch (e: Exception) {
-            logger.warning("Database migration skipped (DB unavailable): ${e.message}")
+            logger.warning("DB migration skipped: ${e.message}")
         }
     }
 
     private fun startBackupIfConnected() {
-        if (databaseManager.isConnected) {
-            backupService.start()
-        } else {
-            logger.info("Backup service skipped (DB unavailable).")
-        }
+        if (databaseManager.isConnected) backupService.start() else logger.info("Backup skipped.")
     }
 
     private fun registerListeners() {
-        server.pluginManager.registerEvents(
-            PlayerListener(questManager, syncService),
-            this,
-        )
-        server.pluginManager.registerEvents(
-            questProgressListener,
-            this,
-        )
+        server.pluginManager.registerEvents(PlayerListener(questManager, syncService), this)
+        server.pluginManager.registerEvents(questProgressListener, this)
     }
 
     companion object {

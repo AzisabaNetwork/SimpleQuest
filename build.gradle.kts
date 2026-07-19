@@ -81,6 +81,9 @@ dependencies {
     // GUI (compileOnly — must be installed on server)
     compileOnly(libs.kunectron)
 
+    // Cloud Command Framework
+    implementation(libs.cloud.paper)
+
     // Integration test
     add("integrationTestImplementation", libs.kotest.runner)
     add("integrationTestImplementation", libs.kotest.assertions)
