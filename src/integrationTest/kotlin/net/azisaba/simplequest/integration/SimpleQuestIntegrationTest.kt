@@ -4,23 +4,24 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.nio.file.Path
 
-class SimpleQuestIntegrationTest : FunSpec() {
-    private val logPath =
-        Path.of(
-            System.getenv("SERVER_LOG")
-                ?: "servers/master/logs/latest.log",
-        )
+class SimpleQuestIntegrationTest :
+    FunSpec({
 
-    private fun logLines(): List<String> =
-        if (logPath.toFile().exists()) {
-            logPath.toFile().readLines()
-        } else {
-            emptyList()
-        }
+        val logPath =
+            Path.of(
+                System.getenv("SERVER_LOG")
+                    ?: "servers/master/logs/latest.log",
+            )
 
-    private fun logContains(pattern: Regex): Boolean = logLines().any { pattern.containsMatchIn(it) }
+        fun logLines(): List<String> =
+            if (logPath.toFile().exists()) {
+                logPath.toFile().readLines()
+            } else {
+                emptyList()
+            }
 
-    init {
+        fun logContains(pattern: Regex): Boolean = logLines().any { pattern.containsMatchIn(it) }
+
         test("plugin loaded and enabled") {
             logContains(Regex("SimpleQuest enabled")) shouldBe true
         }
@@ -56,5 +57,4 @@ class SimpleQuestIntegrationTest : FunSpec() {
                 )
             }
         }
-    }
-}
+    })

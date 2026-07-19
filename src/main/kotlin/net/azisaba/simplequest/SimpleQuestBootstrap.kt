@@ -78,19 +78,15 @@ private val simpleQuestCommand =
                     sender.sendMessage(Component.text("§cUsage: /simplequest grant <player> <questType>"))
                     return@BasicCommand
                 }
-                val player = Bukkit.getPlayer(args[1])
-                if (player == null) {
-                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
-                    return@BasicCommand
-                }
                 val questKey = args[2]
                 val type = DomainQuestTypes.get(questKey)
                 if (type == null) {
                     sender.sendMessage(Component.text("§cQuest type not found: $questKey"))
                     return@BasicCommand
                 }
-                SimpleQuest.plugin.questService.grantQuest(player.uniqueId.toString(), questKey)
-                sender.sendMessage(Component.text("§aGranted §e$questKey §ato §e${player.name}"))
+                val playerId = resolvePlayerId(args[1])
+                SimpleQuest.plugin.questService.grantQuest(playerId, questKey)
+                sender.sendMessage(Component.text("§aGranted §e$questKey §ato §e${args[1]}"))
             }
 
             "revoke" -> {
@@ -102,14 +98,10 @@ private val simpleQuestCommand =
                     sender.sendMessage(Component.text("§cUsage: /simplequest revoke <player> <questType>"))
                     return@BasicCommand
                 }
-                val player = Bukkit.getPlayer(args[1])
-                if (player == null) {
-                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
-                    return@BasicCommand
-                }
                 val questKey = args[2]
-                SimpleQuest.plugin.questService.revokeQuest(player.uniqueId.toString(), questKey)
-                sender.sendMessage(Component.text("§aRevoked §e$questKey §afrom §e${player.name}"))
+                val playerId = resolvePlayerId(args[1])
+                SimpleQuest.plugin.questService.revokeQuest(playerId, questKey)
+                sender.sendMessage(Component.text("§aRevoked §e$questKey §afrom §e${args[1]}"))
             }
 
             "progress" -> {
@@ -123,7 +115,7 @@ private val simpleQuestCommand =
                 }
                 val player = Bukkit.getPlayer(args[1])
                 if (player == null) {
-                    sender.sendMessage(Component.text("§cPlayer not found: ${args[1]}"))
+                    sender.sendMessage(Component.text("§cPlayer not online: ${args[1]}"))
                     return@BasicCommand
                 }
                 val quest = SimpleQuest.plugin.questService.getQuestByPlayerId(player.uniqueId.toString())
@@ -135,7 +127,6 @@ private val simpleQuestCommand =
                 val formula = Formula.parse(args[3])
                 val current = quest.progresses[reqKey]
                 val newValue = formula.apply(current)
-                // Set progress to exact value (SET), or add delta
                 val delta = newValue - current
                 SimpleQuest.plugin.questService.updateProgress(quest, reqKey, delta)
                 sender.sendMessage(Component.text("§aProgress [$reqKey]: $current → $newValue"))
@@ -146,6 +137,20 @@ private val simpleQuestCommand =
             }
         }
     }
+
+/** Resolves a player name (or UUID string) to a player UUID for grant/revoke. */
+private fun resolvePlayerId(nameOrUuid: String): String {
+    // If it already looks like a UUID, use it directly
+    if (nameOrUuid.length == 36 && nameOrUuid.count { it == '-' } == 4) {
+        return nameOrUuid
+    }
+    // Try online player first, then offline
+    val online = Bukkit.getPlayer(nameOrUuid)
+    if (online != null) return online.uniqueId.toString()
+    @Suppress("DEPRECATION")
+    val offline = Bukkit.getOfflinePlayer(nameOrUuid)
+    return offline.uniqueId.toString()
+}
 
 private val partyCommand =
     BasicCommand { source, args ->

@@ -19,10 +19,19 @@ class ServerProcess(
     private var rcon: RconClient? = null
 
     fun connectRcon() {
-        rcon =
-            RconClient(host, rconPort, rconPassword).also {
-                it.connect()
+        var lastEx: Exception? = null
+        repeat(10) { attempt ->
+            try {
+                rcon = RconClient(host, rconPort, rconPassword).also { it.connect() }
+                return
+            } catch (e: Exception) {
+                lastEx = e
+                if (attempt < 9) {
+                    Thread.sleep(2000)
+                }
             }
+        }
+        throw IllegalStateException("RCON connection failed after 10 attempts", lastEx)
     }
 
     fun disconnectRcon() {
