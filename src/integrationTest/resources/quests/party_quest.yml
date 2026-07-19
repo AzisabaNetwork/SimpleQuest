@@ -1,0 +1,28 @@
+PartyQuest:
+  Title: "&dParty Integration Test Quest"
+  Description:
+    - "&7This quest verifies multi-player party quest flow."
+    - "&7Requires 2-4 players in a party."
+  Icon: "DIAMOND"
+  Aura: true
+  Giver: "&eTest Party Leader"
+  Category: "lq:general"
+  Location: "world,0,64,0"
+  Options:
+    MaxParty: "2-4"
+    Limits:
+      Daily: 999
+      Lifetime: 9999
+  Objectives:
+    BreakStone: 10
+  Actions:
+    OnComplete:
+      - Type: Command
+        Params: "say % completed the party integration test quest!"
+      - Type: Item
+        Params: "minecraft:emerald,3"
+  Scripts:
+    OnStart:
+      - "say Party quest started — integration test"
+    OnComplete:
+      - "say Party quest completed — integration test"

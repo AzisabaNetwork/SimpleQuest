@@ -113,6 +113,7 @@ jobs:
           mkdir -p "$QDIR"
           cp src/integrationTest/resources/quests/test_quest.yml "$QDIR/"
           cp src/integrationTest/resources/quests/bot_quest.yml "$QDIR/"
+          cp src/integrationTest/resources/quests/party_quest.yml "$QDIR/"
 
           # Copy Paper jar
           cp paper.jar "$dir/"
@@ -156,6 +157,12 @@ jobs:
           echo "--- Bot quest scenario ---"
           npx tsx src/quest-scenario.ts 2>&1 | tee -a ../artifacts/bot-output.log || {
             echo "Bot quest scenario failed"
+          }
+
+          # Run the party quest scenario (multi-bot)
+          echo "--- Bot party quest scenario (2 bots) ---"
+          SQS_BOT_COUNT=2 npx tsx src/party-quest.ts 2>&1 | tee -a ../artifacts/bot-output.log || {
+            echo "Bot party quest scenario failed"
           }
           cd ..
           echo "=== Bot scenario complete ==="

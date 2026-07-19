@@ -5,6 +5,7 @@
   "scripts": {
     "test": "npx tsx src/main.ts",
     "quest": "npx tsx src/quest-scenario.ts",
+    "party": "npx tsx src/party-quest.ts",
     "screenshot": "npx tsx src/screenshot.ts"
   },
   "dependencies": {
