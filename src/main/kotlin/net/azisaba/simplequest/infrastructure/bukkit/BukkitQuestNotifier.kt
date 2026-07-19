@@ -3,6 +3,7 @@ package net.azisaba.simplequest.infrastructure.bukkit
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import net.azisaba.simplequest.domain.quest.port.QuestNotifier
+import net.azisaba.simplequest.gui.QuestDetailGui
 import net.azisaba.simplequest.gui.QuestPanelGui
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -31,6 +32,7 @@ class BukkitQuestNotifier
             val quest = SimpleQuest.plugin.questManager.getQuestByPlayer(player)
             if (quest != null) {
                 questPanelGui.show(player, quest)
+                QuestDetailGui.mount(player, quest)
             } else {
                 player.sendMessage("§aQuest started: §e$questKey")
             }
@@ -39,6 +41,7 @@ class BukkitQuestNotifier
         override fun hideQuestPanel(playerId: String) {
             val player = Bukkit.getPlayer(UUID.fromString(playerId)) ?: return
             questPanelGui.hide(player)
+            QuestDetailGui.unmount(player)
         }
 
         override fun sendMessage(
