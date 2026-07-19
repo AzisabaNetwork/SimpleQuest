@@ -26,11 +26,3 @@ permissions:
   simplequest.debug:
     description: Debug GUI access
     default: op
-
-commands:
-  simplequest:
-    description: SimpleQuest management command
-    usage: /simplequest <reload|grant|revoke|progress|quest|party>
-  party:
-    description: Party management command
-    usage: /party <invite|accept|kick>
