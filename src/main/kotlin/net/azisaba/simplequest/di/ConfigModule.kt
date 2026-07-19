@@ -8,6 +8,7 @@ import net.azisaba.simplequest.data.DatabaseConfig
 import net.azisaba.simplequest.data.DiscordConfig
 import net.azisaba.simplequest.data.MultiServerConfig
 import net.azisaba.simplequest.data.PanelConfig
+import net.azisaba.simplequest.data.RedisConfig
 import net.azisaba.simplequest.data.SimpleQuestConfig
 import java.io.File
 import java.util.logging.Level
@@ -63,4 +64,7 @@ object ConfigModule {
 
     @Provides
     fun providePanelConfig(config: SimpleQuestConfig): PanelConfig = config.panel
+
+    @Provides
+    fun provideRedisConfig(config: SimpleQuestConfig): RedisConfig = config.redis
 }

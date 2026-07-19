@@ -9,6 +9,7 @@ import net.azisaba.simplequest.database.BackupService
 import net.azisaba.simplequest.database.DatabaseManager
 import net.azisaba.simplequest.database.DiscordWebhook
 import net.azisaba.simplequest.database.MigrationRunner
+import net.azisaba.simplequest.database.RedisManager
 import net.azisaba.simplequest.database.SyncService
 import net.azisaba.simplequest.infrastructure.di.InfrastructureModule
 import net.azisaba.simplequest.listener.QuestProgressListener
@@ -34,6 +35,8 @@ interface SimpleQuestComponent {
     fun configData(): SimpleQuestConfig
 
     fun databaseManager(): DatabaseManager
+
+    fun redisManager(): RedisManager
 
     fun questManager(): QuestManager
 

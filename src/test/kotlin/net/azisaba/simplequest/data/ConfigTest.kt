@@ -35,13 +35,15 @@ class ConfigTest :
         context("RedisConfig") {
             test("defaults") {
                 val c = RedisConfig()
+                c.user shouldBe ""
                 c.host shouldBe "localhost"
                 c.port shouldBe 6379
                 c.password shouldBe ""
             }
 
             test("custom values") {
-                val c = RedisConfig(host = "redis.local", port = 6380, password = "redis-pass")
+                val c = RedisConfig(user = "cache", host = "redis.local", port = 6380, password = "redis-pass")
+                c.user shouldBe "cache"
                 c.host shouldBe "redis.local"
                 c.port shouldBe 6380
                 c.password shouldBe "redis-pass"

@@ -26,6 +26,7 @@ data class DatabaseConfig(
 
 @Serializable
 data class RedisConfig(
+    val user: String = "",
     val host: String = "localhost",
     val port: Int = 6379,
     val password: String = "",

@@ -20,6 +20,7 @@ database:
 
 # ── Redis 接続設定 ──
 redis:
+  user: ""                 # Redis 6+ ACL のユーザー名（default ユーザー利用時は空文字）
   host: "localhost"        # Redis のホスト名 or IP
   port: 6379               # ポート番号
   password: ""             # 認証パスワード（requirepass 設定時）
@@ -74,6 +75,7 @@ MariaDB（または MySQL）への接続情報です。
 Redis への接続情報です。キャッシュと PubSub メッセージングに使用されます。
 
 - **password**: Redis 側で `requirepass` を設定している場合に指定。未設定なら空文字 `""` で問題ありません
+- **user**: Redis 6 以降の ACL で `default` 以外のユーザーを使う場合に指定。未設定（空文字）なら `default` ユーザーとして接続します
 
 ### `maxPartySize` / `partyInviteLimit`
 
