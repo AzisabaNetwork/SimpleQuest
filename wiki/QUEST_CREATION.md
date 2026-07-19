@@ -1,7 +1,6 @@
 # クエスト定義の作成
 
-SimpleQuest のクエストは **YAML ファイル** で定義します。MythicMobs ライクな記法を採用しており、
-直感的に記述できます。
+SimpleQuest のクエストは **YAML ファイル** で定義します。MythicMobs ライクな記法を採用しており、直感的に記述できます。
 
 ## 目次
 
@@ -17,57 +16,57 @@ SimpleQuest のクエストは **YAML ファイル** で定義します。Mythic
 
 ```
 plugins/SimpleQuest/
-└── @namespace/         ← 任意の名前空間（例: @lq）
+└── @namespace/         ← 名前空間（@ 必須）
     └── types/          ← ここに .yml ファイルを配置
         ├── wolf_slayer.yml
         └── supply_procurement.yml
 ```
 
-- ファイル拡張子は **`.yml`** である必要があります
-- 文字コードは **UTF-8**（BOM なし）で保存してください
-- 1 ファイルに複数のクエスト定義を含めることができます
+- ファイル拡張子は **`.yml`** または **`.yaml`**
+- 文字コードは **UTF-8**（BOM なし）
+- 1 ファイルに複数のクエスト定義を含めることが可能
+- ディレクトリ名は必ず `@` で始めてください（`@lq`、`@custom` など）
 
 ---
 
 ## YAML 基本構造
 
 ```yaml
-# QuestName が YAML のトップレベルキー（クエスト ID）
 QuestName:
-  Title: "&aクエストタイトル"
-  Description:
+  Title: "&aクエストタイトル"           # 必須
+  Description:                          # 必須
     - "&7説明文1行目"
     - "&7説明文2行目"
-  Icon: "MATERIAL:CUSTOM_MODEL_DATA"   # または MATERIAL のみ
-  Aura: true                            # エンチャント光沢（任意）
+  Icon: "MATERIAL"                      # 必須、または "MATERIAL:CMD"
+  Aura: true                            # 任意（エンチャント光沢）
   Giver: "&e依頼人"                     # 任意
-  Category: "lq:general"                # カテゴリキー
-  Location: "world,x,y,z"               # ワールド,座標
+  Category: "lq:general"                # 必須
+  Location: "world,x,y,z"               # 必須
 
-  Options:
+  Options:                              # 任意
     MaxParty: "1-4"                     # "min-max" または "max"
-    Limits:                             # 受注・完了可能回数制限
+    Limits:
       Daily: 3
       Weekly: 10
       Monthly: 30
       Yearly: 365
       Lifetime: 100
-    DeathLimit: 3                       # クエスト中の許容死亡回数
+    DeathLimit: 3
 
-  Requirements:                         # 受注条件
+  Requirements:                         # 任意（受注条件）
     PvELevel: 10
     Money: 100.0
+    PartyMode: true
 
-  Objectives:                           # 達成条件
-    KillZombie: 10                      # 数値
-    # またはアイテム収集:
-    # CollectDiamond: "minecraft:diamond*5"
+  Objectives:                           # 必須（達成条件）
+    BreakStone: 10
+    KillZombie: 5
 
-  Actions:                              # 完了時アクション
-    OnFirstComplete:                    # 初回クリア時のみ
+  Actions:                              # 任意（完了時報酬）
+    OnFirstComplete:
       - Type: Command
         Params: "give % minecraft:diamond"
-    OnComplete:                         # 毎回
+    OnComplete:
       - Type: Item
         Params: "minecraft:diamond,5"
       - Type: MythicItem
@@ -75,16 +74,18 @@ QuestName:
       - Type: PvELevel
         Params: "100"
 
-  Guides:                               # ナビゲーションガイド
+  Guides:                               # 任意（ナビゲーション）
     - Title: "&a目的地"
       Location: "x,y,z"
-      Condition: "req=1"               # 条件（任意）
+      Condition: "req=1"
 
-  Scripts:                              # スクリプト（任意）
+  Scripts:                              # 任意（イベントスクリプト）
     OnStart: ["say start"]
-    OnStart+20: ["say delayed"]        # 遅延実行（tick）
     OnComplete: ["say done"]
     OnCancel: ["say cancelled"]
+
+  Unlock:                               # 任意（自動解放条件）
+    - EnterArea: "world,100,64,200,10"
 ```
 
 ---
@@ -93,7 +94,7 @@ QuestName:
 
 ### Title（必須）
 
-クエストの表示名です。`&` カラーコードが使用可能です。
+クエストの表示名。`&` カラーコード使用可。
 
 ```yaml
 Title: "&c&l緊急クエスト"
@@ -101,20 +102,20 @@ Title: "&c&l緊急クエスト"
 
 ### Description（必須）
 
-クエストの説明文です。リスト形式で複数行記述できます。
+クエストの説明文。リスト形式。
 
 ```yaml
 Description:
   - "&7森に潜む魔物を討伐せよ"
-  - "&7残り: %progress%"
+  - "&7残り: 5 体"
 ```
 
 ### Icon（必須）
 
-クエスト選択 GUI に表示するアイコンです。
+クエスト選択 GUI に表示するアイコン。
 
 ```yaml
-# 基本: MATERIAL のみ
+# 基本
 Icon: "IRON_SWORD"
 
 # カスタムモデルデータ付き
@@ -126,7 +127,7 @@ Icon: "PLAYER_HEAD:base64string"
 
 ### Aura（任意）
 
-`true` にするとエンチャント光沢エフェクトが付きます。デフォルトは `false`。
+`true` でエンチャント光沢エフェクト。デフォルトは `false`。
 
 ```yaml
 Aura: true
@@ -134,7 +135,7 @@ Aura: true
 
 ### Giver（任意）
 
-クエストの依頼人名です。
+クエストの依頼人名。
 
 ```yaml
 Giver: "&e村長"
@@ -142,12 +143,12 @@ Giver: "&e村長"
 
 ### Category（必須）
 
-クエストのカテゴリです。以下のビルトインカテゴリが利用可能です：
+ビルトインカテゴリ:
 
 | キー | 表示名 | 説明 |
 |---|---|---|
 | `lq:general` | General | 一般クエスト |
-| `lq:daily` | Daily | デイリークエスト（抽選対象） |
+| `lq:daily` | Daily | デイリークエスト |
 | `lq:story` | Story | ストーリークエスト |
 | `lq:event` | Event | イベントクエスト |
 
@@ -157,29 +158,27 @@ Category: "lq:general"
 
 ### Location（必須）
 
-クエストの開始地点です。`world,x,y,z` 形式で指定します。
+クエストの開始地点。`world,x,y,z` 形式。
 
 ```yaml
 Location: "world,100,64,200"
 ```
 
-### Options
+### Options（任意）
 
 #### MaxParty
-
-パーティの最小・最大人数です。
 
 ```yaml
 Options:
   MaxParty: "1-4"    # 1〜4人（ソロ可）
-  MaxParty: "4"      # 4人固定（ソロ不可）
+  MaxParty: "4"      # 4人固定
 ```
 
 #### Limits
 
-クエストの受注・完了可能回数を周期ごとに制限します。
+受注・完了可能回数の周期制限。
 
-| 周期 | リセットタイミング |
+| 周期 | リセット |
 |---|---|
 | `Daily` | 毎日 0:00 |
 | `Weekly` | 毎週月曜 0:00 |
@@ -195,22 +194,18 @@ Options:
     Lifetime: 100
 ```
 
-> [!NOTE]
-> すべての制限を設定する必要はありません。必要な周期のみ指定してください。
-
 #### DeathLimit
 
-クエスト中の許容死亡回数です。超過するとクエスト失敗になります。
+許容死亡回数。超過でクエスト失敗。
 
 ```yaml
 Options:
-  DeathLimit: 3      # 3回死亡可能
-  # DeathLimit を省略 → 死亡回数制限なし
+  DeathLimit: 3
 ```
 
-### Requirements（受注条件）
+### Requirements（任意）
 
-クエストを受注するために必要な条件です。
+クエスト受注に必要な条件。
 
 ```yaml
 Requirements:
@@ -219,92 +214,100 @@ Requirements:
   PartyMode: true     # パーティ必須
 ```
 
-### Objectives（達成条件）
+### Objectives（必須）
 
-クエスト完了に必要な目標です。Objective Key の命名規則に従うことで、
-プレイヤーの行動に応じて自動的に進捗が更新されます。
+クエスト完了に必要な達成条件。Objective Key の命名規則に従うことで、プレイヤーの行動に応じて**自動的に進捗が更新**されます。
 
 > [!IMPORTANT]
-> Objective Key の命名規則と対応イベントの詳細は **[Objectives とイベントトリガー](quest/EVENTS_AND_OBJECTIVES.md)** を参照してください。
+> 命名規則と全イベント一覧は **[Objectives とイベントトリガー](quest/EVENTS_AND_OBJECTIVES.md)** を参照してください。
 
 ```yaml
-# 数値のみ: キー名がそのまま Mob 名/アイテム名として解釈される
 Objectives:
-  KillZombie: 10
-
-# アイテム収集: "material*amount" 形式
-Objectives:
-  CollectDiamond: "minecraft:diamond*5"
+  BreakStone: 10       # 石を10個破壊
+  KillZombie: 5        # ゾンビを5体討伐
+  CollectDiamond: 3    # ダイヤモンドを3個拾う
+  CraftStick: 10       # 棒を10個作成
+  ConsumeApple: 5      # リンゴを5個食べる
 ```
 
-### Actions（アクション）
-
-クエスト完了時に実行される報酬アクションです。
-
-#### アクション種別
-
-| Type | 説明 | Params 形式 |
+| プレフィックス | 意味 | 例 |
 |---|---|---|
-| `Command` | コンソールコマンド実行 | `"コマンド文字列"` |
-| `Item` | Minecraft アイテム付与 | `"material,amount"` |
-| `MythicItem` | MythicMobs アイテム付与 | `"ItemName,amount"` |
-| `PvELevel` | PvE 経験値付与 | `"amount"` |
+| `Break` | ブロック破壊 | `BreakStone` |
+| `Place` | ブロック設置 | `PlaceDirt` |
+| `Kill` | エンティティ討伐 | `KillZombie` |
+| `Collect` | アイテム収集 | `CollectDiamond` |
+| `Craft` | アイテム作成 | `CraftStick` |
+| `Consume` | 飲食 | `ConsumeApple` |
+| `Fish` | 釣り | `FishCod` |
+| `Enchant` | エンチャント | `EnchantSword` |
+| `Smelt` | 精錬 | `SmeltIron` |
+| `Breed` | 繁殖 | `BreedCow` |
+| `Shear` | 毛刈り | `ShearSheep` |
 
-#### トリガー
+### Actions（任意）
 
-| トリガー | 実行タイミング |
-|---|---|
-| `OnFirstComplete` | 各プレイヤーが初めてクリアした時のみ |
-| `OnComplete` | クリアするたび毎回 |
+クエスト完了時の報酬。詳細は **[完了時アクション](quest/ACTIONS.md)** を参照。
 
 ```yaml
 Actions:
-  OnFirstComplete:
+  OnFirstComplete:                  # 初回クリア時のみ
     - Type: Command
       Params: "give % minecraft:diamond 5"
-    - Type: MythicItem
-      Params: "LegendarySword,1"
-  OnComplete:
+  OnComplete:                       # 毎回
     - Type: Item
       Params: "minecraft:emerald,3"
-    - Type: PvELevel
-      Params: "50"
 ```
 
-> [!NOTE]
-> コマンド内の `%` は実行プレイヤー名に置換されます。
+| Type | 説明 | Params | 実装 |
+|---|---|---|---|
+| `Command` | コンソールコマンド | `"コマンド文字列"` | ✅ |
+| `Item` | アイテム付与 | `"material,amount"` | ✅ |
+| `MythicItem` | MythicMobs アイテム | `"ItemName,amount"` | ⚠️ 未実装 |
+| `PvELevel` | PvE 経験値 | `"amount"` | ⚠️ 未実装 |
+
+プレースホルダー: コマンド内の `%` はプレイヤー名に置換されます。
 
 ### Guides（任意）
 
-プレイヤーを目的地まで誘導するナビゲーションガイドです。
-パーティクルと ActionBar で表示されます。
+ナビゲーションガイド。上から順に評価され、最初に条件を満たしたガイドが表示されます。
 
 ```yaml
 Guides:
   - Title: "&a森の入り口"
     Location: "80,64,180"
-    Condition: "req=1"       # 条件付き表示（任意）
+    Condition: "req=1"       # 条件付き（optional）
   - Title: "&cボス部屋"
     Location: "150,64,200"
 ```
 
 ### Scripts（任意）
 
-クエストの各イベントで実行されるスクリプトです。
+クエストイベント時のスクリプト実行。
 
 ```yaml
 Scripts:
   OnStart: ["say クエスト開始！"]
-  OnStart+20: ["say 開始から1秒後"]    # +tick で遅延実行
-  OnComplete: ["say クエストクリア！"]
-  OnCancel: ["say クエスト失敗..."]
+  OnStart+20: ["say 1秒後に実行"]    # +tick で遅延
+  OnComplete: ["say クリア！"]
+  OnCancel: ["say 失敗..."]
 ```
+
+### Unlock（任意）
+
+クエストの自動解放条件。詳細は **[クエスト解放条件](quest/UNLOCK.md)** を参照。
+
+```yaml
+Unlock:
+  - EnterArea: "world,100,64,200,10"    # 半径10ブロック進入で解放
+```
+
+> ⚠️ `Unlock` は YAML パースのみ対応。実際の解放処理は未実装です。
 
 ---
 
 ## 具体例
 
-### 例1: シンプルな討伐クエスト
+### 討伐クエスト
 
 ```yaml
 WolfSlayer:
@@ -331,34 +334,50 @@ WolfSlayer:
         Params: "50"
 ```
 
-### 例2: アイテム収集クエスト
+### 採掘クエスト
 
 ```yaml
-SupplyProcurement:
-  Title: "&e物資調達"
+Stonemason:
+  Title: "&7石工の修行"
   Description:
-    - "&7指定された物資を集めよ"
-    - "&7ダイヤモンド: 0/5"
-    - "&7鉄インゴット: 0/20"
-  Icon: "CHEST"
-  Giver: "&e商人"
+    - "&7石を採掘し、加工せよ"
+  Icon: "STONE_PICKAXE"
+  Category: "lq:general"
+  Location: "world,0,64,0"
+  Objectives:
+    BreakStone: 30
+    BreakCobblestone: 50
+    CraftStonePickaxe: 3
+  Actions:
+    OnComplete:
+      - Type: Item
+        Params: "minecraft:iron_pickaxe,1"
+```
+
+### 飲食クエスト
+
+```yaml
+HungryChef:
+  Title: "&6腹ペコ料理人"
+  Description:
+    - "&7美味しいものをたくさん食べよう！"
+  Icon: "APPLE"
   Category: "lq:daily"
-  Location: "world,50,64,50"
+  Location: "world,0,64,0"
   Options:
     Limits:
       Daily: 1
   Objectives:
-    CollectDiamond: "minecraft:diamond*5"
-    CollectIron: "minecraft:iron_ingot*20"
+    ConsumeApple: 5
+    ConsumeBread: 5
+    ConsumeCookedBeef: 3
   Actions:
     OnComplete:
-      - Type: Command
-        Params: "give % minecraft:emerald 10"
-      - Type: PvELevel
-        Params: "30"
+      - Type: Item
+        Params: "minecraft:golden_apple,1"
 ```
 
-### 例3: 初回クリア報酬付きクエスト
+### 初回特別報酬付き
 
 ```yaml
 DragonSlayer:
@@ -382,9 +401,7 @@ DragonSlayer:
   Actions:
     OnFirstComplete:
       - Type: Command
-        Params: "give % minecraft:netherite_sword{display:'{Name:\"&dDragonbane\"}'}"
-      - Type: MythicItem
-        Params: "DragonScale,5"
+        Params: "give % minecraft:netherite_sword 1"
     OnComplete:
       - Type: PvELevel
         Params: "500"
@@ -400,22 +417,12 @@ DragonSlayer:
 
 ### 名前空間の追加
 
-新しい名前空間を追加するには、`plugins/SimpleQuest/` 以下にディレクトリを作成します：
-
-```
-plugins/SimpleQuest/
-├── @lq/           ← デフォルト
-│   └── types/
-│       ├── quest_a.yml
-│       └── quest_b.yml
-└── @custom/       ← 追加した名前空間
-    └── types/
-        └── event_quest.yml
+```bash
+mkdir -p plugins/SimpleQuest/@custom/types
+# → @custom/types/ 以下に .yml を配置
 ```
 
 ### リロードで反映
-
-YAML ファイルを編集したら必ずリロードしてください：
 
 ```bash
 /simplequest reload
@@ -425,7 +432,8 @@ YAML ファイルを編集したら必ずリロードしてください：
 
 | 問題 | 原因 | 対策 |
 |---|---|---|
-| YAML が読み込まれない | インデントがずれている | スペース2個で統一。タブ禁止 |
-| アイコンが表示されない | Material 名が間違っている | [Minecraft Material 一覧](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html) を確認 |
-| カテゴリが認識されない | 誤ったカテゴリキー | `lq:general` 等のビルトインのみ使用可能 |
-| アクションが実行されない | Type / Params の綴りミス | `Command`, `Item`, `MythicItem`, `PvELevel` のいずれか |
+| 読み込まれない | ディレクトリ名に `@` がない | `@namespace` にリネーム |
+| 同上 | インデントがずれている | スペース2個で統一。タブ禁止 |
+| アイコン表示されない | Material 名が間違い | [Paper Javadoc](https://jd.papermc.io/paper/1.21/org/bukkit/Material.html) で確認 |
+| 進捗が更新されない | Objective Key の命名規則違反 | `BreakStone` のように正しいプレフィックスを使う |
+| アクションが実行されない | Type/Params の綴りミス | `Command`/`Item`/`MythicItem`/`PvELevel` のいずれか |
