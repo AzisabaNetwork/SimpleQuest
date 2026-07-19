@@ -7,6 +7,7 @@ import net.azisaba.simplequest.database.BackupService
 import net.azisaba.simplequest.database.DatabaseManager
 import net.azisaba.simplequest.database.DiscordWebhook
 import net.azisaba.simplequest.database.MigrationRunner
+import net.azisaba.simplequest.database.RedisManager
 import net.azisaba.simplequest.database.SyncService
 import net.azisaba.simplequest.di.BukkitModule
 import net.azisaba.simplequest.di.DaggerSimpleQuestComponent
@@ -37,6 +38,8 @@ class SimpleQuest : JavaPlugin() {
         private set
     lateinit var databaseManager: DatabaseManager
         private set
+    lateinit var redisManager: RedisManager
+        private set
     lateinit var questManager: QuestManager
         private set
     lateinit var questService: QuestService
@@ -60,6 +63,7 @@ class SimpleQuest : JavaPlugin() {
         diComponent = DaggerSimpleQuestComponent.builder().bukkitModule(BukkitModule(this)).build()
         configData = diComponent.configData()
         databaseManager = diComponent.databaseManager()
+        redisManager = diComponent.redisManager()
         questManager = diComponent.questManager()
         questService = diComponent.questService()
         syncService = diComponent.syncService()
@@ -74,12 +78,14 @@ class SimpleQuest : JavaPlugin() {
         registerCommands()
         registerListeners()
         startBackupIfConnected()
+        if (redisManager.isConnected) logger.info("Redis connected.") else logger.info("Redis disabled.")
         logger.info("SimpleQuest enabled.")
     }
 
     override fun onDisable() {
         if (::backupService.isInitialized) backupService.stop()
         if (::discordWebhook.isInitialized) discordWebhook.shutdown()
+        if (::redisManager.isInitialized) redisManager.disconnect()
         if (::databaseManager.isInitialized) databaseManager.disconnect()
         logger.info("SimpleQuest disabled.")
     }
