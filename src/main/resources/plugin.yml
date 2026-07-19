@@ -6,3 +6,23 @@ api-version: 1.21
 depend: []
 softdepend:
   - Kunectron
+
+permissions:
+  simplequest.reload:
+    description: Reload quest definitions and config
+    default: op
+  simplequest.grant:
+    description: Grant a quest type to a player
+    default: op
+  simplequest.revoke:
+    description: Revoke a quest type from a player
+    default: op
+  simplequest.progress:
+    description: Update quest progress for a player
+    default: op
+  simplequest.stage:
+    description: Manage quest stages
+    default: op
+  simplequest.debug:
+    description: Debug GUI access
+    default: op
