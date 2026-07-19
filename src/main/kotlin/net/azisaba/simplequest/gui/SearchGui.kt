@@ -1,20 +1,25 @@
-// Original: https://github.com/AzisabaNetwork/quem by tksimeji
-// Adapted for SimpleQuest
-
 package net.azisaba.simplequest.gui
 
-import com.tksimeji.kunectron.SignGui
-import com.tksimeji.kunectron.event.GuiHandler
+import com.tksimeji.kunectron.builder.GuiBuilder
 import com.tksimeji.kunectron.event.SignGuiEvents
 import org.bukkit.entity.Player
 
-@SignGui
-class SearchGui(
-    @SignGui.Player private val player: Player,
-    private val searchable: SearchableGui,
-) {
-    @GuiHandler
-    fun onClose(event: SignGuiEvents.CloseEvent) {
-        searchable.search(event.firstLine)
+/**
+ * Sign-based search GUI utility.
+ * Opens a sign editor and calls [onSearch] with the first line on close.
+ */
+object SearchGui {
+    fun openFor(
+        player: Player,
+        onSearch: (String) -> Unit,
+    ) {
+        GuiBuilder
+            .sign()
+            .handler(SignGuiEvents.CloseEvent::class.java) { event: SignGuiEvents.CloseEvent, _ ->
+                val query = event.firstLine
+                if (query.isNotBlank()) {
+                    onSearch(query)
+                }
+            }.build(player)
     }
 }

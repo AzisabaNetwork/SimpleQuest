@@ -3,28 +3,42 @@ package net.azisaba.simplequest.infrastructure.bukkit
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import net.azisaba.simplequest.domain.quest.port.QuestNotifier
+import net.azisaba.simplequest.gui.QuestPanelGui
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 import java.util.UUID
 
 /**
- * Bukkit implementation of [QuestNotifier] using Paper API for chat messages.
- * GUI panel integration will be added after QuestPanelGui migration.
+ * Bukkit implementation of [QuestNotifier].
+ *
+ * - [showQuestPanel] displays the scoreboard quest panel
+ * - [hideQuestPanel] closes it
+ * - [sendMessage] sends a chat message
  */
 @Singleton
 class BukkitQuestNotifier
     @Inject
-    constructor() : QuestNotifier {
+    constructor(
+        private val plugin: Plugin,
+        private val questPanelGui: QuestPanelGui,
+    ) : QuestNotifier {
         override fun showQuestPanel(
             playerId: String,
             questKey: String,
         ) {
             val player = Bukkit.getPlayer(UUID.fromString(playerId)) ?: return
-            player.sendMessage("§aQuest started: §e$questKey")
+            val quest = SimpleQuest.plugin.questManager.getQuestByPlayer(player)
+            if (quest != null) {
+                questPanelGui.show(player, quest)
+            } else {
+                player.sendMessage("§aQuest started: §e$questKey")
+            }
         }
 
         override fun hideQuestPanel(playerId: String) {
             val player = Bukkit.getPlayer(UUID.fromString(playerId)) ?: return
-            player.sendMessage("§cQuest ended.")
+            questPanelGui.hide(player)
         }
 
         override fun sendMessage(
@@ -35,3 +49,12 @@ class BukkitQuestNotifier
             player.sendMessage(message)
         }
     }
+
+/**
+ * Bridge to access SimpleQuest.plugin from the notifier package.
+ * TODO: replace with proper DI injection.
+ */
+private object SimpleQuest {
+    val plugin: net.azisaba.simplequest.SimpleQuest
+        get() = net.azisaba.simplequest.SimpleQuest.plugin
+}
