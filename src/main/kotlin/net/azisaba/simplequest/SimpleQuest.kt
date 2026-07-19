@@ -93,15 +93,20 @@ class SimpleQuest : JavaPlugin() {
         }
         val str = StringParser.stringParser<CommandSender>()
 
-        fun cmd(vararg parts: String) = mgr.commandBuilder(parts.first(), *parts.drop(1).toTypedArray())
+        // Helper: creates a builder chain [root, child1, child2, ...]
+        fun cmd(vararg parts: String): org.incendo.cloud.Command.Builder<CommandSender> {
+            var b: org.incendo.cloud.Command.Builder<CommandSender> = mgr.commandBuilder(parts[0])
+            for (i in 1 until parts.size) {
+                b = b.literal(parts[i]) ?: error("Failed to create literal '${parts[i]}'")
+            }
+            return b
+        }
 
-        // /simplequest
         mgr.command(
-            cmd("simplequest")
-                .handler { ctx -> ctx.sender().sendMessage(Component.text("§6SimpleQuest §7v${description.version}")) },
+            cmd("simplequest").handler { ctx -> ctx.sender().sendMessage(Component.text("§6SimpleQuest §7v${description.version}")) },
         )
 
-        // /simplequest reload
+        mgr.command(cmd("simplequest", "help").handler { ctx -> showSimpleQuestHelp(ctx.sender()) })
         mgr.command(
             cmd("simplequest", "reload")
                 .permission("simplequest.reload")
@@ -109,32 +114,13 @@ class SimpleQuest : JavaPlugin() {
                     val raw = ctx.rawInput().input()
                     reloadPlugin(raw.contains("--use-local"), raw.contains("--use-mysql"))
                     ctx.sender().sendMessage(
-                        if (syncService.hasConflicts) {
-                            Component.text("§cConflicts remain!")
-                        } else {
-                            Component.text("§aSimpleQuest reloaded.")
-                        },
+                        if (syncService.hasConflicts) Component.text("§cConflicts remain!") else Component.text("§aSimpleQuest reloaded."),
                     )
                 },
         )
-
-        // /simplequest quest / gui
-        mgr.command(
-            cmd("simplequest", "quest")
-                .handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } },
-        )
-        mgr.command(
-            cmd("simplequest", "gui")
-                .handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } },
-        )
-
-        // /simplequest party
-        mgr.command(
-            cmd("simplequest", "party")
-                .handler { ctx -> playerOnly(ctx.sender()) { PartyMenuGui.open(it) } },
-        )
-
-        // /simplequest grant
+        mgr.command(cmd("simplequest", "quest").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
+        mgr.command(cmd("simplequest", "gui").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
+        mgr.command(cmd("simplequest", "party").handler { ctx -> playerOnly(ctx.sender()) { PartyMenuGui.open(it) } })
         mgr.command(
             cmd("simplequest", "grant")
                 .permission("simplequest.grant")
@@ -150,21 +136,18 @@ class SimpleQuest : JavaPlugin() {
                     ctx.sender().sendMessage(Component.text("§aGranted §e$qk §ato §e${ctx.get<String>("player")}"))
                 },
         )
-
-        // /simplequest revoke
         mgr.command(
             cmd("simplequest", "revoke")
                 .permission("simplequest.revoke")
                 .required("player", str)
                 .required("questType", str)
                 .handler { ctx ->
-                    val qk = ctx.get<String>("questType")
-                    questService.revokeQuest(resolvePlayerId(ctx.get("player")), qk)
-                    ctx.sender().sendMessage(Component.text("§aRevoked §e$qk §afrom §e${ctx.get<String>("player")}"))
+                    questService.revokeQuest(resolvePlayerId(ctx.get("player")), ctx.get<String>("questType"))
+                    ctx.sender().sendMessage(
+                        Component.text("§aRevoked §e${ctx.get<String>("questType")} §afrom §e${ctx.get<String>("player")}"),
+                    )
                 },
         )
-
-        // /simplequest progress
         mgr.command(
             cmd("simplequest", "progress")
                 .permission("simplequest.progress")
@@ -192,11 +175,10 @@ class SimpleQuest : JavaPlugin() {
                 },
         )
 
-        // /party
         mgr.command(
-            cmd("party").handler { ctx ->
-                ctx.sender().sendMessage(Component.text("§6/party invite <player> | accept <id> | kick <player>"))
-            },
+            cmd(
+                "party",
+            ).handler { ctx -> ctx.sender().sendMessage(Component.text("§6/party invite <player> | accept <id> | kick <player>")) },
         )
         mgr.command(
             cmd("party", "invite")
@@ -222,45 +204,41 @@ class SimpleQuest : JavaPlugin() {
                 },
         )
         mgr.command(
-            cmd("party", "accept")
-                .required("id", str)
-                .handler { ctx ->
-                    val s = ctx.sender() as? Player ?: return@handler
-                    if (InviteManager.instance.acceptInvite(s, ctx.get("id"))) {
-                        s.sendMessage(Component.text("§aJoined party!"))
-                    } else {
-                        s.sendMessage(Component.text("§cInvalid or expired invite."))
-                    }
-                },
+            cmd("party", "accept").required("id", str).handler { ctx ->
+                val s = ctx.sender() as? Player ?: return@handler
+                if (InviteManager.instance.acceptInvite(s, ctx.get("id"))) {
+                    s.sendMessage(Component.text("§aJoined party!"))
+                } else {
+                    s.sendMessage(Component.text("§cInvalid or expired invite."))
+                }
+            },
         )
         mgr.command(
-            cmd("party", "kick")
-                .required("target", str)
-                .handler { ctx ->
-                    val s = ctx.sender() as? Player ?: return@handler
-                    val party =
-                        PartyManager.getParty(s) as? PartyImpl ?: run {
-                            s.sendMessage(Component.text("§cNot in party."))
-                            return@handler
-                        }
-                    if (party.leader != s) {
-                        s.sendMessage(Component.text("§cLeader only."))
-                        return@handler
-                    }
-                    val t =
-                        Bukkit.getPlayer(ctx.get<String>("target"))
-                            ?: run {
-                                s.sendMessage(Component.text("§cPlayer not found."))
-                                return@handler
-                            }
-                    if (t !in party) {
+            cmd("party", "kick").required("target", str).handler { ctx ->
+                val s = ctx.sender() as? Player ?: return@handler
+                val party =
+                    PartyManager.getParty(s) as? PartyImpl ?: run {
                         s.sendMessage(Component.text("§cNot in party."))
                         return@handler
                     }
-                    party.removeMember(t)
-                    t.sendMessage(Component.text("§cKicked."))
-                    s.sendMessage(Component.text("§aKicked §e${t.name}"))
-                },
+                if (party.leader != s) {
+                    s.sendMessage(Component.text("§cLeader only."))
+                    return@handler
+                }
+                val t =
+                    Bukkit.getPlayer(ctx.get<String>("target"))
+                        ?: run {
+                            s.sendMessage(Component.text("§cPlayer not found."))
+                            return@handler
+                        }
+                if (t !in party) {
+                    s.sendMessage(Component.text("§cNot in party."))
+                    return@handler
+                }
+                party.removeMember(t)
+                t.sendMessage(Component.text("§cKicked."))
+                s.sendMessage(Component.text("§aKicked §e${t.name}"))
+            },
         )
     }
 
@@ -269,6 +247,21 @@ class SimpleQuest : JavaPlugin() {
         action: (Player) -> Unit,
     ) {
         (sender as? Player)?.let(action) ?: sender.sendMessage(Component.text("§cPlayer only"))
+    }
+
+    private fun showSimpleQuestHelp(sender: CommandSender) {
+        sender.sendMessage(Component.text("§6===== SimpleQuest Help ====="))
+        sender.sendMessage(Component.text("§e/simplequest §7- Show version"))
+        sender.sendMessage(Component.text("§e/simplequest help §7- Show this help"))
+        sender.sendMessage(Component.text("§e/simplequest reload §7- Reload config & quests"))
+        sender.sendMessage(Component.text("§e/simplequest quest §7- Open quest GUI"))
+        sender.sendMessage(Component.text("§e/simplequest party §7- Open party GUI"))
+        sender.sendMessage(Component.text("§e/simplequest grant <player> <quest> §7- Grant quest"))
+        sender.sendMessage(Component.text("§e/simplequest revoke <player> <quest> §7- Revoke quest"))
+        sender.sendMessage(Component.text("§e/simplequest progress <player> <key> <formula> §7- Update progress"))
+        sender.sendMessage(Component.text("§e/party invite <player> §7- Invite to party"))
+        sender.sendMessage(Component.text("§e/party accept <id> §7- Accept invite"))
+        sender.sendMessage(Component.text("§e/party kick <player> §7- Kick member"))
     }
 
     private fun resolvePlayerId(nameOrUuid: String): String {
