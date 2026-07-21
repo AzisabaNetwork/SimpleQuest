@@ -20,8 +20,6 @@ multi-server:
     directory: "plugins/SimpleQuest/backups/"
 discord:
   webhook-url: "https://discord.com/api/webhooks/..."
-
-# ...existing config...
 ```
 
 ## プレイヤーデータ
@@ -71,7 +69,7 @@ CREATE TABLE quest_definitions (
     quest_key   VARCHAR(255) PRIMARY KEY,
     yaml_text   MEDIUMTEXT NOT NULL,
     checksum    VARCHAR(64) NOT NULL,          -- SHA-256
-    updated_at  TIMESTAMP(3) NOT NULL,
+    updated_at  VARCHAR(32) NOT NULL,          -- ISO 8601 形式のタイムスタンプ
     updated_by  VARCHAR(36) NOT NULL,          -- サーバーID (UUID)
     conflict    BOOLEAN NOT NULL DEFAULT FALSE
 );

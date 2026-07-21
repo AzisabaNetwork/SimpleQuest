@@ -90,30 +90,39 @@ redis:
   host: 'localhost'
   port: 6379
   password: ''
+  user: ''              # Redis 6+ ACL のユーザー名（default ユーザー利用時は空文字）
 
 # パーティーの最大サイズ
 maxPartySize: 8
 
-# パーティー招待の有効期限 (tick数)
+# パーティー招待の有効期限 (tick数, default: 1200 = 60秒)
 partyInviteLimit: 1200
-
-# クエスト終了後にテレポートする場所 (任意)
-lobby:
-  world: 'minecraft:overworld'
-  x: 0
-  y: 0
-  z: 0
-  yaw: 0    # 任意
-  pitch: 0  # 任意
 
 # クエストパネルの設定
 panel:
   title: '&dSimpleQuest'
-  footer: '&7いますぐ &eazisaba.net&7 で遊べ！'
+  footer: '&7azisaba.net'
+
+# マルチサーバー同期設定
+multi-server:
+  write-to-mysql: false
+  write-to-yaml: false
+  conflict-mode: 'LOCAL'
+  backup:
+    enabled: false
+    interval-hours: 24
+    retention-days: 30
+    directory: 'plugins/SimpleQuest/backups/'
+
+# Discord Webhook 通知 (コンフリクト通知用)
+discord:
+  webhook-url: ''
 ```
 
 ## 名前空間の設計指針
 
 - デフォルト名前空間として `lq` (simplequest) を使用
 - ビルドインカテゴリに `lq:event` を追加 (イベントクエスト用)
-- YAML 書式は MythicMobs ライクなスタイルを採用予定 (要検討)
+- YAML 書式は MythicMobs ライクなスタイルを採用
+- ファイル拡張子は `.yml` または `.yaml`
+- 文字コードは UTF-8（BOM なし）

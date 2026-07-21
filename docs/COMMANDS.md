@@ -2,7 +2,17 @@
 
 ## `/simplequest` (管理コマンド)
 
-Paper Brigadier を使用して実装。
+cloud (Incendo) + Paper Brigadier を使用して実装。
+
+### reload
+
+```shell
+/simplequest reload [--use-local|--use-mysql]
+```
+
+- `--use-local`: コンフリクト時にローカル YAML の内容で MySQL を上書き
+- `--use-mysql`: コンフリクト時に MySQL の内容でローカル YAML を上書き
+- 両方省略時はコンフリクトを検出して警告のみ
 
 | サブコマンド | 権限 | 説明 |
 |---|---|---|
