@@ -1,10 +1,10 @@
 # ステージシステム
 
-Stage は**同時に挑戦できるパーティ数を制限**するための仕組み。主にボス戦などリソース競合を避けたい場面で使用する。
+Stage はクエスト内で段階的な進行管理を行う仕組みです。
 
 ## Stage の定義
 
-YAML (`@namespace/stages/...)` による定義:
+YAML (`@namespace/stages/...`) による定義:
 
 ```yaml
 title: '&aボス戦'
@@ -13,12 +13,7 @@ location:
   x: 0
   y: 0
   z: 0
-unmountLocation:        # 任意
-  world: 'minecraft:overworld'
-  x: 0
-  y: 0
-  z: 0
-maxParties: 1           # 任意 (default: 1)
+maxParties: 1
 ```
 
 ## アーキテクチャ
@@ -27,29 +22,45 @@ maxParties: 1           # 任意 (default: 1)
 
 ```kotlin
 interface StageLike {
-    val stage: Stage
+    val key: String
+    fun mount()
+    fun unmount()
 }
 ```
 
 `Stage` と `Stage.Queue` の両方がこれを実装し、Party は任意の StageLike を保持できる。
 
-### Stage クラス
+### Stage インターフェース
 
 ```kotlin
-class Stage(override val key: Key, private val data: Stage): StageLike, Keyed {
-    val title: Component
-    val location: Location
-    val unmountLocation: Location?   // null の場合は元の位置に戻す
-    val maxParties: Int              // 同時収容上限 (default: 1)
-    val queue: Queue                 // 待機キュー
-    val size: Int                    // 現在収容中のパーティ数
+interface Stage : StageLike {
+    val active: Boolean
+    val tasks: List<StageTask>
 }
 ```
 
-### Queue クラス (内部クラス)
+### StageTask
 
 ```kotlin
-class Queue(override val stage: Stage): StageLike {
+data class StageTask(
+    val key: String,
+    val description: String,
+    val isComplete: Boolean = false,
+)
+```
+
+`StageTask` はステージ内の個別タスクを表す。`isComplete` がすべて `true` になるとステージクリアとなる。
+
+## mount / unmount
+
+- `mount()`: パーティをステージに参加させる
+- `unmount()`: パーティをステージから離脱させる
+- 同時参加パーティ数は `maxParties` (デフォルト 1) で制限
+
+## Queue (待機キュー)
+
+```kotlin
+class Queue(override val stage: Stage) : StageLike {
     val first: Party?      // キューの先頭
     val size: Int          // 待機数
     fun add(party: Party): Boolean   // true=即時mount, false=キュー追加
@@ -58,58 +69,7 @@ class Queue(override val stage: Stage): StageLike {
 }
 ```
 
-## Mount / Unmount の動作
-
-### Mount 処理
-
-```kotlin
-fun mount(party: Party) {
-    // 既にマウント済み → 例外
-    // 空きがない → UnsupportedOperationException
-    parties.add(party)
-    party.stage = this
-    party.forEach {
-        originalLocations[it] = it.location  // 現在地を保存
-        it.teleport(location)                // Stage 位置へ TP
-    }
-}
-```
-
-### Queue からの Mount
-
-```kotlin
-class Queue {
-    fun add(party: Party): Boolean {
-        if (stage.parties.size < stage.maxParties) {
-            stage.mount(party)   // 空きがある → 即時マウント
-            return true
-        }
-        // 満員 → キューに追加
-        set.add(party)
-        party.stage = this       // 待機中は stage が Queue に変わる
-        return false
-    }
-}
-```
-
-### Unmount 処理
-
-```kotlin
-fun unmount(party: Party) {
-    party.stage = null
-    party.forEach {
-        // unmountLocation 有 → そこへ、無 → 元の位置へ
-        it.teleport(if (unmountLocation == null) originalLocations[it]!! else unmountLocation!!)
-        originalLocations.remove(it)
-    }
-    parties.remove(party)
-    queue.first?.let { mount(it) }   // キュー先頭があれば自動マウント
-}
-```
-
-### キュー先頭の自動マウント
-
-Unmount 時に `queue.first` (キュー先頭の Party) があれば自動的に `mount()` を呼ぶ。これにより満員→解除→自動補充の流れが実現される。
+空きがある場合は即時 mount、満員の場合はキュー追加。
 
 ## StageLike と Party の関係
 
@@ -117,13 +77,10 @@ Unmount 時に `queue.first` (キュー先頭の Party) があれば自動的に
 interface Party {
     var stage: StageLike?   // null = ステージ未参加
 }
-
-// マウント中:
-party.stage is Stage        → stage.title などでステージ情報を表示
-
-// キュー待機中:
-party.stage is Stage.Queue  → indexOf(party) で待機位置を表示
 ```
+
+- マウント中: `party.stage is Stage` → ステージ情報表示
+- キュー待機中: `party.stage is Stage.Queue` → 待機位置表示
 
 ## コマンド
 
@@ -132,14 +89,14 @@ party.stage is Stage.Queue  → indexOf(party) で待機位置を表示
 /simplequest stage unmount <player> <stage>
 ```
 
-詳細は [COMMANDS.md](COMMANDS.md) 参照。
+> **実装状況**: 基本構造は実装済み。stage mount/unmount コマンドと高度なテレポート連携は今後の実装予定。
 
 ## スコアボード表示
 
-QuestPanelGui 相当の UI で Party の stage 状態に応じて以下のように表示:
+QuestPanelGui で Party の stage 状態に応じて表示:
 
 | party.stage の型 | 表示内容 |
 |---|---|
-| `Stage` | "ステージ: {stage.title}" |
+| `Stage` | "ステージ: {title}" |
 | `Stage.Queue` | "ステージキュー: {position}/{queueSize}" |
 | null | 非表示 |

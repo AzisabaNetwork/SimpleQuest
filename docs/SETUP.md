@@ -83,20 +83,28 @@ src/
 ├── main/
 │   └── kotlin/net/azisaba/simplequest/
 │       ├── SimpleQuest.kt             — プラグインエントリポイント
-│       ├── SimpleQuestBootstrap.kt    — PluginBootstrap + コマンド登録
-│       ├── SimpleQuestLoader.kt       — YAML 名前空間スキャン
-│       ├── action/                  — Action システム
-│       ├── command/                 — コマンドユーティリティ
-│       ├── data/                    — @Serializable data class
-│       │   └── yaml/               — YAML クエストスキーマ
-│       ├── database/                — DB 接続 + リポジトリ
-│       ├── gui/                     — Kunectron GUI
-│       ├── listener/                — Bukkit イベントリスナー
-│       ├── party/                   — パーティシステム
-│       ├── quest/                   — クエストドメイン
-│       ├── registry/                — インメモリレジストリ
-│       ├── script/                  — スクリプトシステム
-│       └── stage/                   — ステージシステム
+│       ├── SimpleQuestLoader.kt       — YAML 名前空間スキャン・QuestType 変換
+│       ├── application/quest/         — クエストサービスクラス
+│       ├── command/                   — コマンドユーティリティ (Formula)
+│       ├── data/                      — @Serializable config / YAML schema
+│       ├── database/                  — DB 接続、リポジトリ、Flyway マイグレーション
+│       ├── di/                        — Dagger DI 設定
+│       ├── domain/                    — ドメイン層
+│       │   ├── action/               — アクション定義 + ポート
+│       │   ├── data/                 — Icon, Location
+│       │   ├── party/model/          — Party, Invite
+│       │   ├── quest/model/          — Quest, QuestType, Progresses 等
+│       │   ├── quest/port/           — Repository, Notifier ポート
+│       │   ├── registry/             — Registry, Keyed
+│       │   ├── script/               — Script 定義 + Runner ポート
+│       │   └── stage/                — Stage, StageLike
+│       ├── gui/                       — Kunectron GUI
+│       ├── infrastructure/            — インフラ層 (Bukkit 実装)
+│       ├── listener/                  — Bukkit イベントリスナー
+│       ├── party/                     — パーティ実装
+│       ├── quest/                     — クエスト実装
+│       ├── registry/                  — レジストリ定義
+│       └── stage/                     — ステージ実装
 └── test/
     └── kotlin/net/azisaba/simplequest/  — kotest + MockBukkit テスト
 ```
