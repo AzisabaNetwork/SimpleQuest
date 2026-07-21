@@ -27,12 +27,12 @@ redis:
 
 # ── パーティ設定 ──
 maxPartySize: 8            # 1パーティの最大人数
-partyInviteLimit: 1200     # パーティ招待の有効期限（秒、デフォルト 20 分）
+partyInviteLimit: 1200     # パーティ招待の有効期限（tick、デフォルト 1200 tick = 60 秒）
 
 # ── GUI パネル設定 ──
 panel:
   title: "&dSimpleQuest"     # クエスト選択 GUI のタイトル
-  footer: "&7azisaba.net"  # GUI 下部のフッターテキスト
+  footer: "&7azisaba.net"    # GUI 下部のフッターテキスト
 
 # ── マルチサーバー同期設定 ──
 multi-server:
@@ -82,7 +82,7 @@ Redis への接続情報です。キャッシュと PubSub メッセージング
 パーティシステムの制限設定です。
 
 - **maxPartySize**: パーティに所属できる最大メンバー数（リーダー含む）
-- **partyInviteLimit**: 招待の有効期限（秒）。期限内に `/party accept <id>` で承諾する必要があります。デフォルト 1200（20分）
+- **partyInviteLimit**: 招待の有効期限（tick）。期限内に `/party accept <id>` で承諾する必要があります。デフォルト 1200 tick（60秒）
 
 ### `panel`
 

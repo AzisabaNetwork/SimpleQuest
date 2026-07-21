@@ -149,7 +149,7 @@
 
 - ID は招待時に表示される UUID
 - 自分宛ての招待のみ承諾可能
-- 招待の有効期限は `config.yml` の `partyInviteLimit`（デフォルト 1200 秒 / 20 分）
+- 招待の有効期限は `config.yml` の `partyInviteLimit`（デフォルト 1200 tick / 60 秒）
 
 ### `/party kick`
 
@@ -172,11 +172,6 @@
 | `simplequest.progress` | op | `/simplequest progress` |
 | `simplequest.stage` | op | ステージ管理（将来実装） |
 | `simplequest.debug` | op | デバッグ GUI（将来実装） |
-
-> [!NOTE]
-> 一般コマンド（`/simplequest quest`, `/party invite` 等）に権限は不要です。
-> 全プレイヤーがデフォルトで使用できます。
-| デバッグ GUI（将来実装） |
 
 > [!NOTE]
 > 一般コマンド（`/simplequest quest`, `/party invite` 等）に権限は不要です。

@@ -268,9 +268,13 @@ WolfSlayer:
 サーバーコンソールに以下が表示されれば起動成功です:
 
 ```
-[SimpleQuest] Flyway migration completed: X migration(s) applied.
+[SimpleQuest] Flyway migration completed: 1 migration(s) applied.
+[SimpleQuest] Redis connected.
 [SimpleQuest] SimpleQuest enabled.
 ```
+
+> **Note**: Redis が未接続の場合は `Redis disabled.` と表示されます。
+> DB マイグレーションがスキップされた場合は `DB migration skipped: ...` と表示されます。
 
 ### 2. コマンドの確認
 
