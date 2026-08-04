@@ -14,7 +14,6 @@ class QuestType(
     val description: List<String>,
     val category: QuestCategory,
     val location: Location?,
-    val giver: String?,
     val playLimits: PlayLimits,
     val acceptConditions: AcceptConditions,
     val maxPlayers: Int?,

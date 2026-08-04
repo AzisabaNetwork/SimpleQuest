@@ -22,7 +22,6 @@ class QuestTypeTest :
                 qt.description shouldBe emptyList()
                 qt.category shouldBe "lq:general"
                 qt.location.shouldBeNull()
-                qt.giver.shouldBeNull()
                 qt.playLimits.isUnlimited shouldBe true
                 qt.acceptConditions.partyMode shouldBe false
                 qt.maxPlayers.shouldBeNull()
@@ -43,7 +42,6 @@ class QuestTypeTest :
                         description = listOf("&7Line 1", "&7Line 2"),
                         category = "lq:daily",
                         location = Location(world = "world_nether", x = 10.0, y = 64.0, z = 20.0),
-                        giver = "&eQuest Master",
                         playLimits = PlayLimits(daily = 5, weekly = 10, lifetime = 100),
                         acceptConditions = AcceptConditions(pveLevel = 10, money = 500.0, partyMode = true),
                         maxPlayers = 4,
@@ -56,7 +54,6 @@ class QuestTypeTest :
                     )
                 qt.title shouldBe "&6Full Quest"
                 qt.description.size shouldBe 2
-                qt.giver shouldBe "&eQuest Master"
                 qt.category shouldBe "lq:daily"
                 qt.location?.world shouldBe "world_nether"
                 qt.playLimits.daily shouldBe 5

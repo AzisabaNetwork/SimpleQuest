@@ -103,7 +103,6 @@ class QuestManager
                         net.azisaba.simplequest.domain.data
                             .Location(it.world, it.x, it.y, it.z, it.yaw, it.pitch)
                     },
-                giver = type.giver,
                 playLimits =
                     net.azisaba.simplequest.domain.quest.model.PlayLimits(
                         weekly = type.playLimits.weekly,

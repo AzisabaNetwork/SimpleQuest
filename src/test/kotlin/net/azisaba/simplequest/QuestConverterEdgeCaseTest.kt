@@ -539,11 +539,6 @@ class QuestConverterEdgeCaseTest :
                 qt.description shouldBe emptyList()
             }
 
-            test("giver is null") {
-                val qt = convert(QuestDef(title = "NoGiver"))
-                qt.giver.shouldBeNull()
-            }
-
             test("category passthrough") {
                 val qt = convert(QuestDef(title = "Cat", category = "lq:weekly"))
                 qt.category shouldBe "lq:weekly"

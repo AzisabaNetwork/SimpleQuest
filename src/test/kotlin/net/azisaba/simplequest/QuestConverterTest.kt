@@ -31,7 +31,6 @@ class QuestConverterTest :
                     description = listOf("desc"),
                     icon = "DIAMOND_SWORD:5001",
                     aura = true,
-                    giver = "&eNPC",
                     category = "lq:daily",
                     location = "world,100,64,200",
                     options =
@@ -57,7 +56,6 @@ class QuestConverterTest :
             qt.icon.type shouldBe "DIAMOND_SWORD"
             qt.icon.customModelData shouldBe 5001
             qt.icon.aura shouldBe true
-            qt.giver shouldBe "&eNPC"
             qt.category shouldBe "lq:daily"
             qt.location?.world shouldBe "world"
             qt.location?.x shouldBe 100.0

@@ -16,7 +16,6 @@ data class QuestType(
     val description: List<String> = emptyList(),
     val category: String = "lq:general",
     val location: Location? = null,
-    val giver: String? = null,
     val playLimits: PlayLimits = PlayLimits(),
     val acceptConditions: AcceptConditions = AcceptConditions(),
     val maxPlayers: Int? = null,
