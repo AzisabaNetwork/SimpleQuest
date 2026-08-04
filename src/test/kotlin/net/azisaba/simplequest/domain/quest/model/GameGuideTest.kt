@@ -1,7 +1,9 @@
 package net.azisaba.simplequest.domain.quest.model
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import net.azisaba.simplequest.domain.data.Icon
 import net.azisaba.simplequest.domain.data.Location
 
 class GameGuideTest :
