@@ -43,6 +43,8 @@ object QuestConverter {
             maxPlayers = maxPlayers,
             minPlayers = minPlayers,
             deathLimit = def.options?.deathLimit,
+            serverExclusive = def.options?.serverExclusive ?: false,
+            timeoutMinutes = def.options?.timeoutMinutes,
             guides = guides,
             requirements = requirements,
             actions = actions,

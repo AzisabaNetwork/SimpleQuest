@@ -121,6 +121,8 @@ class QuestManager
                 maxPlayers = type.maxPlayers,
                 minPlayers = type.minPlayers,
                 deathLimit = type.deathLimit,
+                serverExclusive = type.serverExclusive,
+                timeoutMinutes = type.timeoutMinutes,
                 guides =
                     type.guides.map {
                         net.azisaba.simplequest.domain.quest.model.GameGuide(

@@ -26,6 +26,8 @@ data class QuestOptionsDef(
     @SerialName("MaxParty") val maxParty: String? = null,
     @SerialName("Limits") val limits: PlayLimitDef? = null,
     @SerialName("DeathLimit") val deathLimit: Int? = null,
+    @SerialName("ServerExclusive") val serverExclusive: Boolean = false,
+    @SerialName("TimeoutMinutes") val timeoutMinutes: Int? = null,
 )
 
 @Serializable
