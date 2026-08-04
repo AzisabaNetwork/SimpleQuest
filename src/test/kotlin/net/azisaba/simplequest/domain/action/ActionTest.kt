@@ -10,7 +10,7 @@ class ActionTest :
 
         context("ActionType") {
             test("all four action types exist") {
-                ActionType.entries.size shouldBe 4
+                ActionType.entries.size shouldBe 5
                 ActionType.COMMAND.name shouldBe "COMMAND"
                 ActionType.ITEM_GIVE.name shouldBe "ITEM_GIVE"
                 ActionType.MYTHIC_ITEM_GIVE.name shouldBe "MYTHIC_ITEM_GIVE"
