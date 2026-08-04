@@ -66,6 +66,7 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 adventure-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
 kunectron = { module = "com.github.sysnote8main:kunectron", version.ref = "kunectron" }
+mythicmobs = { module = "io.lumine:Mythic-Dist", version = "5.8.1" }
 cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud" }
 
 [plugins]
