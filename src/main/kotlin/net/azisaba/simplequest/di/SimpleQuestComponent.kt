@@ -3,6 +3,7 @@ package net.azisaba.simplequest.di
 import dagger.Component
 import jakarta.inject.Singleton
 import net.azisaba.simplequest.SimpleQuestLoader
+import net.azisaba.simplequest.application.quest.DailyQuestService
 import net.azisaba.simplequest.application.quest.QuestService
 import net.azisaba.simplequest.data.SimpleQuestConfig
 import net.azisaba.simplequest.database.BackupService
@@ -53,4 +54,6 @@ interface SimpleQuestComponent {
     fun simpleQuestLoader(): SimpleQuestLoader
 
     fun questProgressListener(): QuestProgressListener
+
+    fun dailyQuestService(): DailyQuestService
 }
