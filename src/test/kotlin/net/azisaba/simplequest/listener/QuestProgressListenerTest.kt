@@ -186,6 +186,11 @@ private class FakeRepository : QuestRepository {
         qk: String,
     ) = 0
 
+    override fun getDailyCompletions(
+        pid: String,
+        qk: String,
+    ) = 0
+
     override fun getWeeklyCompletions(
         pid: String,
         qk: String,
@@ -201,10 +206,12 @@ private class FakeRepository : QuestRepository {
         qk: String,
     ) = 0
 
-    override fun isFirstCompletion(
+    override fun getLastCompletionTime(
         pid: String,
         qk: String,
-    ) = true
+    ): Instant? = null
+
+    var lastCompletionTime: Instant? = null
 }
 
 private class FakeDispatcher : ActionDispatcher {

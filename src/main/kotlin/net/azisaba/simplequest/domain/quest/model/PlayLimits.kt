@@ -10,8 +10,9 @@ data class PlayLimits(
     val monthly: Int? = null,
     val yearly: Int? = null,
     val lifetime: Int? = null,
+    val cooldownMinutes: Int? = null,
 ) {
     /** Returns true when no limits are configured. */
     val isUnlimited: Boolean
-        get() = daily == null && weekly == null && monthly == null && yearly == null && lifetime == null
+        get() = daily == null && weekly == null && monthly == null && yearly == null && lifetime == null && cooldownMinutes == null
 }

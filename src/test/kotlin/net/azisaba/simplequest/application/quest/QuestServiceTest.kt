@@ -237,6 +237,50 @@ class QuestServiceTest :
                 service.activeQuestCount shouldBe 0
             }
         }
+
+        context("playLimits") {
+            test("fails when daily limit exceeded") {
+                val type = createQuestType("test:daily", playLimits = PlayLimits(daily = 2))
+                val party = FakeParty(leaderId = "p1", memberIds = setOf("p1"))
+                fakeRepo.grantQuest("p1", type.key)
+                fakeRepo.completionCount = 2
+
+                val result = service.startQuest(type, party, listOf("p1"))
+                (result is QuestResult.Failure) shouldBe true
+            }
+
+            test("fails when cooldown has not elapsed") {
+                val type = createQuestType("test:cooldown", playLimits = PlayLimits(cooldownMinutes = 30))
+                val party = FakeParty(leaderId = "p1", memberIds = setOf("p1"))
+                fakeRepo.grantQuest("p1", type.key)
+                // Last completed 10 minutes ago (within 30min cooldown)
+                fakeRepo.lastCompletionTime = Instant.now().minusSeconds(600)
+
+                val result = service.startQuest(type, party, listOf("p1"))
+                (result is QuestResult.Failure) shouldBe true
+            }
+
+            test("succeeds when cooldown has elapsed") {
+                val type = createQuestType("test:cooldown-ok", playLimits = PlayLimits(cooldownMinutes = 30))
+                val party = FakeParty(leaderId = "p1", memberIds = setOf("p1"))
+                fakeRepo.grantQuest("p1", type.key)
+                // Last completed 60 minutes ago (outside 30min cooldown)
+                fakeRepo.lastCompletionTime = Instant.now().minusSeconds(3600)
+
+                val result = service.startQuest(type, party, listOf("p1"))
+                (result is QuestResult.Success) shouldBe true
+            }
+
+            test("succeeds when no prior completion (cooldown n/a)") {
+                val type = createQuestType("test:cooldown-first", playLimits = PlayLimits(cooldownMinutes = 30))
+                val party = FakeParty(leaderId = "p1", memberIds = setOf("p1"))
+                fakeRepo.grantQuest("p1", type.key)
+                fakeRepo.lastCompletionTime = null
+
+                val result = service.startQuest(type, party, listOf("p1"))
+                (result is QuestResult.Success) shouldBe true
+            }
+        }
     })
 
 // ---- Fake implementations ----
@@ -280,6 +324,11 @@ private class FakeQuestRepository : QuestRepository {
         questKey: String,
     ): Int = 0
 
+    override fun getDailyCompletions(
+        playerId: String,
+        questKey: String,
+    ): Int = completionCount
+
     override fun getWeeklyCompletions(
         playerId: String,
         questKey: String,
@@ -295,10 +344,12 @@ private class FakeQuestRepository : QuestRepository {
         questKey: String,
     ): Int = completionCount
 
-    override fun isFirstCompletion(
+    override fun getLastCompletionTime(
         playerId: String,
         questKey: String,
-    ): Boolean = completionCount == 0
+    ): Instant? = lastCompletionTime
+
+    var lastCompletionTime: Instant? = null
 }
 
 private class FakeActionDispatcher : ActionDispatcher {

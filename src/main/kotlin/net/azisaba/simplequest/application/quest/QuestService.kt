@@ -133,6 +133,13 @@ class QuestService
             if (!questRepository.isGranted(playerId, key)) return false
 
             val limits = type.playLimits
+
+            // Daily limit
+            if (limits.daily != null &&
+                questRepository.getDailyCompletions(playerId, key) >= limits.daily
+            ) {
+                return false
+            }
             if (limits.lifetime != null &&
                 questRepository.getCompletionsSince(playerId, key, Instant.EPOCH) >= limits.lifetime
             ) {
@@ -152,6 +159,18 @@ class QuestService
                 questRepository.getYearlyCompletions(playerId, key) >= limits.yearly
             ) {
                 return false
+            }
+
+            // Cooldown: prevent re-start until N minutes after last completion
+            val cooldown = limits.cooldownMinutes
+            if (cooldown != null && cooldown > 0) {
+                val lastCompletion = questRepository.getLastCompletionTime(playerId, key)
+                if (lastCompletion != null) {
+                    val elapsedMs = Instant.now().toEpochMilli() - lastCompletion.toEpochMilli()
+                    if (elapsedMs < cooldown * 60_000L) {
+                        return false
+                    }
+                }
             }
 
             return true

@@ -1,15 +1,23 @@
 package net.azisaba.simplequest.domain.quest.port
 
+import java.time.Instant
+
 /**
  * Repository for querying quest completion and player progress data.
  * Implemented in the infrastructure layer (database).
  */
 interface QuestRepository {
+    /** Returns the timestamp of the last completion, or null if never completed. */
+    fun getLastCompletionTime(
+        playerId: String,
+        questKey: String,
+    ): Instant?
+
     /** Returns the number of times [playerId] has completed [questKey] since [since]. */
     fun getCompletionsSince(
         playerId: String,
         questKey: String,
-        since: java.time.Instant,
+        since: Instant,
     ): Int
 
     /** Returns true if [playerId] has the quest type [questKey] granted. */
@@ -36,6 +44,11 @@ interface QuestRepository {
         questKey: String,
     ): Int
 
+    fun getDailyCompletions(
+        playerId: String,
+        questKey: String,
+    ): Int
+
     fun getWeeklyCompletions(
         playerId: String,
         questKey: String,
@@ -50,9 +63,4 @@ interface QuestRepository {
         playerId: String,
         questKey: String,
     ): Int
-
-    fun isFirstCompletion(
-        playerId: String,
-        questKey: String,
-    ): Boolean
 }
