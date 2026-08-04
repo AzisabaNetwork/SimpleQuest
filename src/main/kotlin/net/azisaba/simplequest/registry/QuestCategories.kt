@@ -9,6 +9,21 @@ object QuestCategories : Registry<QuestCategory>() {
     val STORY = registerBuiltIn("story", "Story")
     val EVENT = registerBuiltIn("event", "Event")
 
+    /** Set of valid category key suffixes for validation. */
+    private val validKeys = setOf("general", "daily", "story", "event")
+
+    /**
+     * Validates that a category key string is among the registered categories.
+     * Input like "lq:general" or "general" are both accepted.
+     */
+    fun isValidCategory(category: String): Boolean {
+        val suffix = category.substringAfter("lq:")
+        return suffix in validKeys
+    }
+
+    /** Returns all valid category key suffixes. */
+    fun validCategoryKeys(): Set<String> = validKeys
+
     private fun registerBuiltIn(
         keySuffix: String,
         title: String,
