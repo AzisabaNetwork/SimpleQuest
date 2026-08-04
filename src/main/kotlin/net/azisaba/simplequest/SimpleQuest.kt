@@ -246,6 +246,16 @@ class SimpleQuest : JavaPlugin() {
                 s.sendMessage(Component.text("§aKicked §e${t.name}"))
             },
         )
+        mgr.command(
+            cmd("party", "deny").required("id", str).handler { ctx ->
+                val s = ctx.sender() as? Player ?: return@handler
+                if (InviteManager.instance.denyInvite(s, ctx.get("id"))) {
+                    s.sendMessage(Component.text("§cInvite denied."))
+                } else {
+                    s.sendMessage(Component.text("§cInvalid or expired invite."))
+                }
+            },
+        )
     }
 
     private fun playerOnly(
