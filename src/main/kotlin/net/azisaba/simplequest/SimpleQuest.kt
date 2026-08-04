@@ -314,7 +314,7 @@ class SimpleQuest : JavaPlugin() {
     }
 
     private fun registerListeners() {
-        server.pluginManager.registerEvents(PlayerListener(questManager, syncService), this)
+        server.pluginManager.registerEvents(PlayerListener(questManager, syncService, questService), this)
         server.pluginManager.registerEvents(questProgressListener, this)
     }
 

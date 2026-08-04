@@ -26,6 +26,7 @@ data class QuestOptionsDef(
     @SerialName("MaxParty") val maxParty: String? = null,
     @SerialName("Limits") val limits: PlayLimitDef? = null,
     @SerialName("DeathLimit") val deathLimit: Int? = null,
+    @SerialName("FailConditions") val failConditions: FailConditionsDef? = null,
 )
 
 @Serializable
@@ -67,4 +68,9 @@ data class GuideDef(
 @Serializable
 data class UnlockDef(
     @SerialName("EnterArea") val enterArea: String? = null,
+)
+
+@Serializable
+data class FailConditionsDef(
+    @SerialName("OnDisconnect") val onDisconnect: Boolean = false,
 )

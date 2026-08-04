@@ -22,6 +22,7 @@ data class QuestType(
     val maxPlayers: Int? = null,
     val minPlayers: Int? = null,
     val deathLimit: Int? = null,
+    val failConditions: FailConditions = FailConditions(),
     val guides: List<GameGuide> = emptyList(),
     val requirements: Map<String, QuestRequirement> = emptyMap(),
     val actions: ActionSet? = null,

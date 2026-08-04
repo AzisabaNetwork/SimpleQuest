@@ -1,7 +1,9 @@
 package net.azisaba.simplequest.listener
 
 import net.azisaba.simplequest.SimpleQuest
+import net.azisaba.simplequest.application.quest.QuestService
 import net.azisaba.simplequest.database.SyncService
+import net.azisaba.simplequest.domain.quest.model.EndReason
 import net.azisaba.simplequest.party.PartyManager
 import net.azisaba.simplequest.quest.QuestManager
 import org.bukkit.event.EventHandler
@@ -17,6 +19,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 class PlayerListener(
     private val questManager: QuestManager,
     private val syncService: SyncService,
+    private val questService: QuestService,
 ) : Listener {
     private val deathCounts = mutableMapOf<Pair<java.util.UUID, String>, Int>()
 
@@ -24,6 +27,7 @@ class PlayerListener(
     constructor() : this(
         SimpleQuest.plugin.questManager,
         SimpleQuest.plugin.syncService,
+        SimpleQuest.plugin.questService,
     )
 
     @EventHandler
@@ -43,7 +47,14 @@ class PlayerListener(
         val player = event.player
         val quest = questManager.getQuestByPlayer(player)
         if (quest != null) {
-            quest.removePlayer(player)
+            // Check if disconnect should fail the quest
+            val domainQuest = questService.getQuestByPlayerId(player.uniqueId.toString())
+            if (domainQuest != null && domainQuest.type.failConditions.onDisconnect) {
+                questService.endQuest(domainQuest, EndReason.CANCEL)
+                player.sendMessage("§cYour quest was cancelled because you disconnected.")
+            } else {
+                quest.removePlayer(player)
+            }
         }
         val party = PartyManager.getParty(player)
         if (party is net.azisaba.simplequest.party.PartyImpl) {

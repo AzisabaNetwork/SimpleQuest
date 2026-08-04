@@ -6,6 +6,7 @@ import net.azisaba.simplequest.domain.action.ActionType
 import net.azisaba.simplequest.domain.data.Icon
 import net.azisaba.simplequest.domain.data.Location
 import net.azisaba.simplequest.domain.quest.model.AcceptConditions
+import net.azisaba.simplequest.domain.quest.model.FailConditions
 import net.azisaba.simplequest.domain.quest.model.GameGuide
 import net.azisaba.simplequest.domain.quest.model.PlayLimits
 import net.azisaba.simplequest.domain.quest.model.QuestRequirement
@@ -29,6 +30,7 @@ object QuestConverter {
         val actions = def.actions?.let { parseActions(it) }
         val guides = def.guides?.map { parseGuide(it, location) } ?: emptyList()
         val scripts = def.scripts?.flatMap { parseScripts(it.key, it.value) } ?: emptyList()
+        val failConditions = parseFailConditions(def.options?.failConditions)
 
         return QuestType(
             key = key,
@@ -43,6 +45,7 @@ object QuestConverter {
             maxPlayers = maxPlayers,
             minPlayers = minPlayers,
             deathLimit = def.options?.deathLimit,
+            failConditions = failConditions,
             guides = guides,
             requirements = requirements,
             actions = actions,
@@ -225,5 +228,12 @@ object QuestConverter {
                 else -> return emptyList()
             }
         return listOf(Script(trigger = trigger, delay = delay, commands = commands))
+    }
+
+    // -- FailConditions --
+
+    private fun parseFailConditions(def: FailConditionsDef?): FailConditions {
+        if (def == null) return FailConditions()
+        return FailConditions(onDisconnect = def.onDisconnect)
     }
 }
