@@ -19,7 +19,7 @@ mockbukkit = "3.133.2"
 kotest = "6.2.2"
 h2 = "2.2.224"
 adventure = "4.18.0"
-kunectron = "1.0.0-beta.13"
+kunectron = "450aeb4"
 cloud = "2.0.0-beta.10"
 
 [libraries]
@@ -65,7 +65,7 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 # Adventure
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 adventure-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
-kunectron = { module = "com.tksimeji:kunectron", version.ref = "kunectron" }
+kunectron = { module = "com.github.sysnote8main:kunectron", version.ref = "kunectron" }
 cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud" }
 
 [plugins]

@@ -20,6 +20,7 @@ kotlin {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven { url = uri("https://jitpack.io") }
 }
 
 val integrationTest by sourceSets.creating {
