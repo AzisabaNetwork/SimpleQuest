@@ -155,6 +155,25 @@ class SimpleQuest : JavaPlugin() {
                 },
         )
         mgr.command(
+            cmd("simplequest", "reset")
+                .permission("simplequest.reset")
+                .required("player", str)
+                .required("questType", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questType")
+                    val playerId = resolvePlayerId(ctx.get<String>("player"))
+                    // Cancel any active quest of this type
+                    val active = questService.getQuestByPlayerId(playerId)
+                    if (active != null && active.type.key == qk) {
+                        questService.endQuest(active, net.azisaba.simplequest.domain.quest.model.EndReason.CANCEL)
+                    }
+                    // Revoke and re-grant
+                    questService.revokeQuest(playerId, qk)
+                    questService.grantQuest(playerId, qk)
+                    ctx.sender().sendMessage(Component.text("§aReset §e$qk §afor §e${ctx.get<String>("player")}"))
+                },
+        )
+        mgr.command(
             cmd("simplequest", "progress")
                 .permission("simplequest.progress")
                 .required("player", str)
@@ -264,6 +283,7 @@ class SimpleQuest : JavaPlugin() {
         sender.sendMessage(Component.text("§e/simplequest party §7- Open party GUI"))
         sender.sendMessage(Component.text("§e/simplequest grant <player> <quest> §7- Grant quest"))
         sender.sendMessage(Component.text("§e/simplequest revoke <player> <quest> §7- Revoke quest"))
+        sender.sendMessage(Component.text("§e/simplequest reset <player> <quest> §7- Reset quest progress"))
         sender.sendMessage(Component.text("§e/simplequest progress <player> <key> <formula> §7- Update progress"))
         sender.sendMessage(Component.text("§e/party invite <player> §7- Invite to party"))
         sender.sendMessage(Component.text("§e/party accept <id> §7- Accept invite"))
