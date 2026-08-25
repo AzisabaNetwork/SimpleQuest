@@ -4,7 +4,6 @@ TestQuest:
     - "&7This quest verifies integration test infrastructure."
   Icon: "DIAMOND"
   Aura: false
-  Giver: "&eTest NPC"
   Category: "lq:general"
   Options:
     Limits:

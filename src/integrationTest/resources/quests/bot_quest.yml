@@ -5,7 +5,6 @@ BotQuest:
     - "&7Bots complete this quest to verify the full quest lifecycle."
   Icon: "DIAMOND_PICKAXE"
   Aura: false
-  Giver: "&eTest Automation"
   Category: "lq:general"
   Location: "world,0,64,0"
   Options:
