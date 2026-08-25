@@ -18,6 +18,10 @@ panel:
   title: "&dSimpleQuest"
   footer: "&7azisaba.net"
 
+daily-quests:
+  enabled: true
+  count: 3
+
 multi-server:
   write-to-mysql: false
   write-to-yaml: false

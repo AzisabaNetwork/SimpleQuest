@@ -3,6 +3,7 @@ package net.azisaba.simplequest.database
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import net.azisaba.simplequest.database.migration.V1__InitialSetup
+import net.azisaba.simplequest.database.migration.V2__DailyQuestAssignments
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.MigrateResult
 import java.util.logging.Level
@@ -29,7 +30,7 @@ class MigrationRunner
                     Flyway
                         .configure()
                         .dataSource(dataSource)
-                        .javaMigrations(V1__InitialSetup(dataSource))
+                        .javaMigrations(V1__InitialSetup(dataSource), V2__DailyQuestAssignments(dataSource))
                         .load()
                 val result = flyway.migrate()
                 logger.info("Flyway migration completed: ${result.migrations.size} migration(s) applied.")

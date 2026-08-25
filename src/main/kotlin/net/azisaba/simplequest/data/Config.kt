@@ -10,6 +10,8 @@ data class SimpleQuestConfig(
     val maxPartySize: Int = 8,
     val partyInviteLimit: Long = 1200,
     val panel: PanelConfig = PanelConfig(),
+    @SerialName("daily-quests")
+    val dailyQuests: DailyQuestConfig = DailyQuestConfig(),
     @SerialName("multi-server")
     val multiServer: MultiServerConfig = MultiServerConfig(),
     val discord: DiscordConfig = DiscordConfig(),
@@ -57,4 +59,10 @@ data class BackupConfig(
 @Serializable
 data class DiscordConfig(
     @SerialName("webhook-url") val webhookUrl: String = "",
+)
+
+@Serializable
+data class DailyQuestConfig(
+    val enabled: Boolean = true,
+    val count: Int = 3,
 )

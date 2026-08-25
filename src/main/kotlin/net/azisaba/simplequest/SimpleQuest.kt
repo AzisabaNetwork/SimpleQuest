@@ -1,5 +1,6 @@
 package net.azisaba.simplequest
 
+import net.azisaba.simplequest.application.quest.DailyQuestService
 import net.azisaba.simplequest.application.quest.QuestService
 import net.azisaba.simplequest.command.Formula
 import net.azisaba.simplequest.data.SimpleQuestConfig
@@ -56,6 +57,8 @@ class SimpleQuest : JavaPlugin() {
         private set
     lateinit var questProgressListener: QuestProgressListener
         private set
+    lateinit var dailyQuestService: DailyQuestService
+        private set
 
     override fun onEnable() {
         plugin = this
@@ -72,6 +75,7 @@ class SimpleQuest : JavaPlugin() {
         discordWebhook = diComponent.discordWebhook()
         simpleQuestLoader = diComponent.simpleQuestLoader()
         questProgressListener = diComponent.questProgressListener()
+        dailyQuestService = diComponent.dailyQuestService()
         runDatabaseDependentSetup()
         registerBuiltInCategories()
         loadQuestDefinitions()
@@ -126,6 +130,7 @@ class SimpleQuest : JavaPlugin() {
         )
         mgr.command(cmd("simplequest", "quest").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
         mgr.command(cmd("simplequest", "gui").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
+        mgr.command(cmd("simplequest", "daily").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
         mgr.command(cmd("simplequest", "party").handler { ctx -> playerOnly(ctx.sender()) { PartyMenuGui.open(it) } })
         mgr.command(
             cmd("simplequest", "grant")
@@ -261,6 +266,7 @@ class SimpleQuest : JavaPlugin() {
         sender.sendMessage(Component.text("§e/simplequest help §7- Show this help"))
         sender.sendMessage(Component.text("§e/simplequest reload §7- Reload config & quests"))
         sender.sendMessage(Component.text("§e/simplequest quest §7- Open quest GUI"))
+        sender.sendMessage(Component.text("§e/simplequest daily §7- Open daily quests"))
         sender.sendMessage(Component.text("§e/simplequest party §7- Open party GUI"))
         sender.sendMessage(Component.text("§e/simplequest grant <player> <quest> §7- Grant quest"))
         sender.sendMessage(Component.text("§e/simplequest revoke <player> <quest> §7- Revoke quest"))

@@ -4,6 +4,7 @@ import com.charleskorn.kaml.Yaml
 import dagger.Module
 import dagger.Provides
 import jakarta.inject.Singleton
+import net.azisaba.simplequest.data.DailyQuestConfig
 import net.azisaba.simplequest.data.DatabaseConfig
 import net.azisaba.simplequest.data.DiscordConfig
 import net.azisaba.simplequest.data.MultiServerConfig
@@ -67,4 +68,7 @@ object ConfigModule {
 
     @Provides
     fun provideRedisConfig(config: SimpleQuestConfig): RedisConfig = config.redis
+
+    @Provides
+    fun provideDailyQuestConfig(config: SimpleQuestConfig): DailyQuestConfig = config.dailyQuests
 }
