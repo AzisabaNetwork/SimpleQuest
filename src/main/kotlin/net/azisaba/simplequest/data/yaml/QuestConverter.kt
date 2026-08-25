@@ -102,6 +102,7 @@ object QuestConverter {
             monthly = def.monthly,
             yearly = def.yearly,
             lifetime = def.lifetime,
+            cooldownMinutes = def.cooldownMinutes,
         )
     }
 

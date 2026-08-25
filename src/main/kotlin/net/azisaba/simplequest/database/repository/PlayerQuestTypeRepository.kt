@@ -89,6 +89,18 @@ object PlayerQuestTypeRepository {
         questKey: String,
     ): Boolean = getCompletionsSince(player, questKey, Instant.EPOCH) == 0
 
+    fun getDailyCompletions(
+        player: UUID,
+        questKey: String,
+    ): Int {
+        val start =
+            LocalDate
+                .now(ZoneId.systemDefault())
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        return getCompletionsSince(player, questKey, start)
+    }
+
     fun getWeeklyCompletions(
         player: UUID,
         questKey: String,
@@ -127,6 +139,21 @@ object PlayerQuestTypeRepository {
                 .toInstant()
         return getCompletionsSince(player, questKey, start)
     }
+
+    fun getLastCompletionTime(
+        player: UUID,
+        questKey: String,
+    ): Instant? =
+        query { stmt ->
+            stmt
+                .prepareStatement(
+                    "SELECT completed_at FROM quest_completions WHERE player_uuid = ? AND quest_key = ? ORDER BY completed_at DESC LIMIT 1",
+                ).use { ps ->
+                    ps.setBytes(1, uuidToBytes(player))
+                    ps.setString(2, questKey)
+                    ps.executeQuery().use { rs -> if (rs.next()) Instant.parse(rs.getString("completed_at")) else null }
+                }
+        }
 
     private fun <T> query(block: (Connection) -> T): T {
         val ds = dataSource ?: error("DataSource not initialized")

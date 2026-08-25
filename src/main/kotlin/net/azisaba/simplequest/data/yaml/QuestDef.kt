@@ -37,6 +37,7 @@ data class PlayLimitDef(
     @SerialName("Monthly") val monthly: Int? = null,
     @SerialName("Yearly") val yearly: Int? = null,
     @SerialName("Lifetime") val lifetime: Int? = null,
+    @SerialName("CooldownMinutes") val cooldownMinutes: Int? = null,
 )
 
 @Serializable
