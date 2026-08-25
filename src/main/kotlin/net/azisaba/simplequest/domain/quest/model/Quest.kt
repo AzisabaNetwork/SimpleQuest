@@ -7,6 +7,7 @@ interface Quest {
     val type: QuestType
     val state: QuestState
     val progresses: Progresses
+    val playerIds: List<String>
 
     fun start()
 

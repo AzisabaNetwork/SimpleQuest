@@ -336,7 +336,7 @@ private class FakeQuestNotifier : QuestNotifier {
 
     override fun showQuestPanel(
         playerId: String,
-        questKey: String,
+        quest: net.azisaba.simplequest.domain.quest.model.Quest,
     ) {
         shownPlayers.add(playerId)
     }

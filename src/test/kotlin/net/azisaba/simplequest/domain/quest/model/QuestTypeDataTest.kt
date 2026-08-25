@@ -173,6 +173,7 @@ private fun createFakeQuest(type: QuestType): Quest =
         override val type: QuestType = type
         override val state: QuestState = QuestState.ACTIVE
         override val progresses: Progresses = Progresses(type.requirements)
+        override val playerIds: List<String> = emptyList()
 
         override fun start() {}
 

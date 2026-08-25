@@ -229,7 +229,7 @@ private class FakeScriptRunner : ScriptRunner {
 private class FakeNotifier : QuestNotifier {
     override fun showQuestPanel(
         pid: String,
-        qk: String,
+        quest: net.azisaba.simplequest.domain.quest.model.Quest,
     ) {}
 
     override fun hideQuestPanel(pid: String) {}
