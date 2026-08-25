@@ -14,6 +14,7 @@ import net.azisaba.simplequest.di.BukkitModule
 import net.azisaba.simplequest.di.DaggerSimpleQuestComponent
 import net.azisaba.simplequest.di.SimpleQuestComponent
 import net.azisaba.simplequest.gui.PartyMenuGui
+import net.azisaba.simplequest.listener.MythicMobsListener
 import net.azisaba.simplequest.listener.PlayerListener
 import net.azisaba.simplequest.listener.QuestProgressListener
 import net.azisaba.simplequest.party.InviteManager
@@ -183,6 +184,28 @@ class SimpleQuest : JavaPlugin() {
                     val nv = f.apply(cur)
                     questService.updateProgress(q, ctx.get<String>("reqKey"), nv - cur)
                     ctx.sender().sendMessage(Component.text("§aProgress [${ctx.get<String>("reqKey")}]: $cur → $nv"))
+                },
+        )
+
+        mgr.command(
+            cmd("simplequest", "complete")
+                .permission("simplequest.complete")
+                .required("player", str)
+                .required("questKey", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questKey")
+                    val playerId = resolvePlayerId(ctx.get<String>("player"))
+                    val quest = questService.getQuestByPlayerId(playerId)
+                    if (quest == null) {
+                        ctx.sender().sendMessage(Component.text("§cNo active quest of type $qk"))
+                        return@handler
+                    }
+                    if (quest.type.key != qk) {
+                        ctx.sender().sendMessage(Component.text("§cActive quest is ${quest.type.key}, not $qk"))
+                        return@handler
+                    }
+                    questService.endQuest(quest, net.azisaba.simplequest.domain.quest.model.EndReason.COMPLETE)
+                    ctx.sender().sendMessage(Component.text("§aCompleted $qk for ${ctx.get<String>("player")}"))
                 },
         )
 
