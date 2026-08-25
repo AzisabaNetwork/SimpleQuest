@@ -57,12 +57,12 @@ jobs:
       - name: Setup pnpm (for bot dependencies)
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: latest
+          version: "10"
 
       - name: Install bot dependencies
         run: |
           cd bots
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
