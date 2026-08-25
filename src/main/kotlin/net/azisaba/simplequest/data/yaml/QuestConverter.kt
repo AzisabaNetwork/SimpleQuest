@@ -46,6 +46,8 @@ object QuestConverter {
             minPlayers = minPlayers,
             deathLimit = def.options?.deathLimit,
             failConditions = failConditions,
+            serverExclusive = def.options?.serverExclusive ?: false,
+            timeoutMinutes = def.options?.timeoutMinutes,
             guides = guides,
             requirements = requirements,
             actions = actions,
@@ -103,6 +105,7 @@ object QuestConverter {
             monthly = def.monthly,
             yearly = def.yearly,
             lifetime = def.lifetime,
+            cooldownMinutes = def.cooldownMinutes,
         )
     }
 
@@ -164,6 +167,15 @@ object QuestConverter {
 
             "PvELevel" -> {
                 Action(type = ActionType.PVELEVEL_EXP, amount = entry.params.toIntOrNull() ?: 0)
+            }
+
+            "RandomItem" -> {
+                val candidates =
+                    entry.params
+                        .split("|")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                Action(type = ActionType.RANDOM_ITEM, candidates = candidates, amount = 1)
             }
 
             else -> {

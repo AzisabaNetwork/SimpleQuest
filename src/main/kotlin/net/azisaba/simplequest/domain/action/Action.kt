@@ -9,4 +9,6 @@ data class Action(
     val amount: Int? = null,
     val item: String? = null,
     val command: String? = null,
+    /** For RANDOM_ITEM: list of material names to pick from */
+    val candidates: List<String> = emptyList(),
 )

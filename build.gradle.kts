@@ -21,6 +21,7 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://mvn.lumine.io/repository/maven-public/") }
 }
 
 val integrationTest by sourceSets.creating {
@@ -81,6 +82,9 @@ dependencies {
 
     // GUI (compileOnly — must be installed on server)
     compileOnly(libs.kunectron)
+
+    // MythicMobs (compileOnly — must be installed on server)
+    compileOnly(libs.mythicmobs)
 
     // Cloud Command Framework
     implementation(libs.cloud.paper)

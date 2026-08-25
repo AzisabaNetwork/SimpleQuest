@@ -8,4 +8,7 @@ enum class ActionType {
     ITEM_GIVE,
     MYTHIC_ITEM_GIVE,
     PVELEVEL_EXP,
+
+    /** Picks one of several candidate items at random */
+    RANDOM_ITEM,
 }

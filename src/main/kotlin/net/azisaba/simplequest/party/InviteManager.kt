@@ -53,6 +53,27 @@ class InviteManager
             return success
         }
 
+        fun denyInvite(
+            player: Player,
+            inviteIdStr: String,
+        ): Boolean {
+            val uuid =
+                try {
+                    UUID.fromString(inviteIdStr)
+                } catch (_: Exception) {
+                    return false
+                }
+            val invite = invites[uuid] ?: return false
+            if (invite.target.uniqueId != player.uniqueId) return false
+            if (invite.isExpired(server.currentTick.toLong())) {
+                invites.remove(uuid)
+                return false
+            }
+            val success = invite.deny(server.currentTick.toLong())
+            invites.remove(uuid)
+            return success
+        }
+
         fun cleanup() {
             val tick = server.currentTick.toLong()
             invites.entries.removeAll { it.value.isExpired(tick) }

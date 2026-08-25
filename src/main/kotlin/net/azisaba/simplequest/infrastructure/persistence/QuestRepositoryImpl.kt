@@ -48,6 +48,11 @@ class QuestRepositoryImpl
             questKey: String,
         ): Int = playerQuestTypeRepository.getPlays(UUID.fromString(playerId), questKey)
 
+        override fun getDailyCompletions(
+            playerId: String,
+            questKey: String,
+        ): Int = playerQuestTypeRepository.getDailyCompletions(UUID.fromString(playerId), questKey)
+
         override fun getWeeklyCompletions(
             playerId: String,
             questKey: String,
@@ -63,8 +68,8 @@ class QuestRepositoryImpl
             questKey: String,
         ): Int = playerQuestTypeRepository.getYearlyCompletions(UUID.fromString(playerId), questKey)
 
-        override fun isFirstCompletion(
+        override fun getLastCompletionTime(
             playerId: String,
             questKey: String,
-        ): Boolean = playerQuestTypeRepository.isFirstCompletion(UUID.fromString(playerId), questKey)
+        ): Instant? = playerQuestTypeRepository.getLastCompletionTime(UUID.fromString(playerId), questKey)
     }

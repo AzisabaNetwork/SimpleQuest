@@ -1,5 +1,6 @@
 package net.azisaba.simplequest
 
+import net.azisaba.simplequest.application.quest.DailyQuestService
 import net.azisaba.simplequest.application.quest.QuestService
 import net.azisaba.simplequest.command.Formula
 import net.azisaba.simplequest.data.SimpleQuestConfig
@@ -13,6 +14,7 @@ import net.azisaba.simplequest.di.BukkitModule
 import net.azisaba.simplequest.di.DaggerSimpleQuestComponent
 import net.azisaba.simplequest.di.SimpleQuestComponent
 import net.azisaba.simplequest.gui.PartyMenuGui
+import net.azisaba.simplequest.listener.MythicMobsListener
 import net.azisaba.simplequest.listener.PlayerListener
 import net.azisaba.simplequest.listener.QuestProgressListener
 import net.azisaba.simplequest.party.InviteManager
@@ -56,6 +58,8 @@ class SimpleQuest : JavaPlugin() {
         private set
     lateinit var questProgressListener: QuestProgressListener
         private set
+    lateinit var dailyQuestService: DailyQuestService
+        private set
 
     override fun onEnable() {
         plugin = this
@@ -72,6 +76,7 @@ class SimpleQuest : JavaPlugin() {
         discordWebhook = diComponent.discordWebhook()
         simpleQuestLoader = diComponent.simpleQuestLoader()
         questProgressListener = diComponent.questProgressListener()
+        dailyQuestService = diComponent.dailyQuestService()
         runDatabaseDependentSetup()
         registerBuiltInCategories()
         loadQuestDefinitions()
@@ -126,6 +131,7 @@ class SimpleQuest : JavaPlugin() {
         )
         mgr.command(cmd("simplequest", "quest").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
         mgr.command(cmd("simplequest", "gui").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
+        mgr.command(cmd("simplequest", "daily").handler { ctx -> playerOnly(ctx.sender()) { QuestGuiObj.open(it) } })
         mgr.command(cmd("simplequest", "party").handler { ctx -> playerOnly(ctx.sender()) { PartyMenuGui.open(it) } })
         mgr.command(
             cmd("simplequest", "grant")
@@ -155,6 +161,25 @@ class SimpleQuest : JavaPlugin() {
                 },
         )
         mgr.command(
+            cmd("simplequest", "reset")
+                .permission("simplequest.reset")
+                .required("player", str)
+                .required("questType", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questType")
+                    val playerId = resolvePlayerId(ctx.get<String>("player"))
+                    // Cancel any active quest of this type
+                    val active = questService.getQuestByPlayerId(playerId)
+                    if (active != null && active.type.key == qk) {
+                        questService.endQuest(active, net.azisaba.simplequest.domain.quest.model.EndReason.CANCEL)
+                    }
+                    // Revoke and re-grant
+                    questService.revokeQuest(playerId, qk)
+                    questService.grantQuest(playerId, qk)
+                    ctx.sender().sendMessage(Component.text("§aReset §e$qk §afor §e${ctx.get<String>("player")}"))
+                },
+        )
+        mgr.command(
             cmd("simplequest", "progress")
                 .permission("simplequest.progress")
                 .required("player", str)
@@ -178,6 +203,28 @@ class SimpleQuest : JavaPlugin() {
                     val nv = f.apply(cur)
                     questService.updateProgress(q, ctx.get<String>("reqKey"), nv - cur)
                     ctx.sender().sendMessage(Component.text("§aProgress [${ctx.get<String>("reqKey")}]: $cur → $nv"))
+                },
+        )
+
+        mgr.command(
+            cmd("simplequest", "complete")
+                .permission("simplequest.complete")
+                .required("player", str)
+                .required("questKey", str)
+                .handler { ctx ->
+                    val qk = ctx.get<String>("questKey")
+                    val playerId = resolvePlayerId(ctx.get<String>("player"))
+                    val quest = questService.getQuestByPlayerId(playerId)
+                    if (quest == null) {
+                        ctx.sender().sendMessage(Component.text("§cNo active quest of type $qk"))
+                        return@handler
+                    }
+                    if (quest.type.key != qk) {
+                        ctx.sender().sendMessage(Component.text("§cActive quest is ${quest.type.key}, not $qk"))
+                        return@handler
+                    }
+                    questService.endQuest(quest, net.azisaba.simplequest.domain.quest.model.EndReason.COMPLETE)
+                    ctx.sender().sendMessage(Component.text("§aCompleted $qk for ${ctx.get<String>("player")}"))
                 },
         )
 
@@ -246,6 +293,16 @@ class SimpleQuest : JavaPlugin() {
                 s.sendMessage(Component.text("§aKicked §e${t.name}"))
             },
         )
+        mgr.command(
+            cmd("party", "deny").required("id", str).handler { ctx ->
+                val s = ctx.sender() as? Player ?: return@handler
+                if (InviteManager.instance.denyInvite(s, ctx.get("id"))) {
+                    s.sendMessage(Component.text("§cInvite denied."))
+                } else {
+                    s.sendMessage(Component.text("§cInvalid or expired invite."))
+                }
+            },
+        )
     }
 
     private fun playerOnly(
@@ -261,9 +318,11 @@ class SimpleQuest : JavaPlugin() {
         sender.sendMessage(Component.text("§e/simplequest help §7- Show this help"))
         sender.sendMessage(Component.text("§e/simplequest reload §7- Reload config & quests"))
         sender.sendMessage(Component.text("§e/simplequest quest §7- Open quest GUI"))
+        sender.sendMessage(Component.text("§e/simplequest daily §7- Open daily quests"))
         sender.sendMessage(Component.text("§e/simplequest party §7- Open party GUI"))
         sender.sendMessage(Component.text("§e/simplequest grant <player> <quest> §7- Grant quest"))
         sender.sendMessage(Component.text("§e/simplequest revoke <player> <quest> §7- Revoke quest"))
+        sender.sendMessage(Component.text("§e/simplequest reset <player> <quest> §7- Reset quest progress"))
         sender.sendMessage(Component.text("§e/simplequest progress <player> <key> <formula> §7- Update progress"))
         sender.sendMessage(Component.text("§e/party invite <player> §7- Invite to party"))
         sender.sendMessage(Component.text("§e/party accept <id> §7- Accept invite"))

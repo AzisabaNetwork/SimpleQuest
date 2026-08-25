@@ -44,11 +44,8 @@ object QuestDetailGui {
 
     private var registered = false
 
-    /** Starts hijacking the crafting grid for [player]'s active [quest]. */
-    fun mount(
-        player: Player,
-        quest: Quest,
-    ) {
+    /** Starts hijacking the crafting grid for [player]'s active quest. */
+    fun mount(player: Player) {
         if (!registered) {
             Bukkit.getPluginManager().registerEvents(listener, SimpleQuest.plugin)
             registered = true

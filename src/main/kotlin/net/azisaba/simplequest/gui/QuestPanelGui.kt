@@ -5,13 +5,14 @@ import com.tksimeji.kunectron.hooks.ScoreboardGuiHooks
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import net.azisaba.simplequest.data.PanelConfig
-import net.azisaba.simplequest.quest.Quest
-import net.azisaba.simplequest.quest.QuestState
+import net.azisaba.simplequest.domain.quest.model.Quest
+import net.azisaba.simplequest.domain.quest.model.QuestState
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
+import java.util.UUID
 
 /**
  * Manages quest scoreboard panels displayed to players.
@@ -30,6 +31,8 @@ class QuestPanelGui
             player: Player,
             quest: Quest,
         ) {
+            val members = quest.playerIds.mapNotNull { Bukkit.getPlayer(UUID.fromString(it)) }
+
             val hooks =
                 GuiBuilder
                     .scoreboard()
@@ -38,10 +41,10 @@ class QuestPanelGui
                     .line(Component.text("§6Progress: §e${quest.type.title}"))
                     .line(Component.text("  §7${quest.progresses.totalProgress} / ${quest.progresses.totalRequired}"))
                     .line(Component.text(""))
-                    .line(Component.text("§eParty (${quest.players.size}):"))
+                    .line(Component.text("§eParty (${members.size}):"))
                     .build()
 
-            quest.players.forEach { member ->
+            members.forEach { member ->
                 val hp = member.health.toInt()
                 val line =
                     Component

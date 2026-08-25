@@ -27,6 +27,8 @@ data class QuestOptionsDef(
     @SerialName("Limits") val limits: PlayLimitDef? = null,
     @SerialName("DeathLimit") val deathLimit: Int? = null,
     @SerialName("FailConditions") val failConditions: FailConditionsDef? = null,
+    @SerialName("ServerExclusive") val serverExclusive: Boolean = false,
+    @SerialName("TimeoutMinutes") val timeoutMinutes: Int? = null,
 )
 
 @Serializable
@@ -36,6 +38,7 @@ data class PlayLimitDef(
     @SerialName("Monthly") val monthly: Int? = null,
     @SerialName("Yearly") val yearly: Int? = null,
     @SerialName("Lifetime") val lifetime: Int? = null,
+    @SerialName("CooldownMinutes") val cooldownMinutes: Int? = null,
 )
 
 @Serializable

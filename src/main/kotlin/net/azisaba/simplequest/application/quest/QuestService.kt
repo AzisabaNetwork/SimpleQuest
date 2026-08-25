@@ -11,6 +11,8 @@ import net.azisaba.simplequest.domain.quest.port.QuestNotifier
 import net.azisaba.simplequest.domain.quest.port.QuestRepository
 import net.azisaba.simplequest.domain.script.port.ScriptRunner
 import java.time.Instant
+import java.util.Timer
+import kotlin.concurrent.timerTask
 import net.azisaba.simplequest.domain.party.model.Party as DomainParty
 import net.azisaba.simplequest.domain.quest.model.Quest as DomainQuest
 import net.azisaba.simplequest.domain.script.Script as DomainScript
@@ -34,6 +36,9 @@ class QuestService
         // playerId -> questKey  (reverse index for lookup)
         private val playerQuests = mutableMapOf<String, String>()
 
+        // questKey -> Timer for timeout
+        private val timeoutTimers = mutableMapOf<String, Timer>()
+
         /**
          * Attempts to start a quest for the given party members.
          */
@@ -51,12 +56,23 @@ class QuestService
                 }
             }
 
+            // Server-wide exclusive check: prevent concurrent runs of the same quest type
+            if (type.serverExclusive && activeQuests.containsKey(type.key)) {
+                return QuestResult.Failure("This quest is currently in progress on this server")
+            }
+
             val quest = createQuest(type, playerIds)
             activeQuests[type.key] = quest
             playerIds.forEach { playerQuests[it] = type.key }
             quest.start()
 
-            playerIds.forEach { questNotifier.showQuestPanel(it, type.key) }
+            // Schedule timeout if configured
+            val timeoutMin = type.timeoutMinutes
+            if (timeoutMin != null && timeoutMin > 0) {
+                scheduleTimeout(type.key, timeoutMin)
+            }
+
+            playerIds.forEach { questNotifier.showQuestPanel(it, quest) }
             return QuestResult.Success(quest)
         }
 
@@ -72,6 +88,8 @@ class QuestService
             activeQuests.remove(quest.type.key)
             // Remove player mappings
             playerQuests.entries.removeAll { it.value == quest.type.key }
+            // Cancel timeout if present
+            timeoutTimers.remove(quest.type.key)?.cancel()
 
             runQuestCompletion(quest, reason)
         }
@@ -80,6 +98,8 @@ class QuestService
          * Cancels all active quests.
          */
         fun cancelAll(reason: EndReason = EndReason.PLUGIN) {
+            timeoutTimers.values.forEach { it.cancel() }
+            timeoutTimers.clear()
             activeQuests.values.toList().forEach { endQuest(it, reason) }
         }
 
@@ -113,6 +133,13 @@ class QuestService
             if (!questRepository.isGranted(playerId, key)) return false
 
             val limits = type.playLimits
+
+            // Daily limit
+            if (limits.daily != null &&
+                questRepository.getDailyCompletions(playerId, key) >= limits.daily
+            ) {
+                return false
+            }
             if (limits.lifetime != null &&
                 questRepository.getCompletionsSince(playerId, key, Instant.EPOCH) >= limits.lifetime
             ) {
@@ -132,6 +159,18 @@ class QuestService
                 questRepository.getYearlyCompletions(playerId, key) >= limits.yearly
             ) {
                 return false
+            }
+
+            // Cooldown: prevent re-start until N minutes after last completion
+            val cooldown = limits.cooldownMinutes
+            if (cooldown != null && cooldown > 0) {
+                val lastCompletion = questRepository.getLastCompletionTime(playerId, key)
+                if (lastCompletion != null) {
+                    val elapsedMs = Instant.now().toEpochMilli() - lastCompletion.toEpochMilli()
+                    if (elapsedMs < cooldown * 60_000L) {
+                        return false
+                    }
+                }
             }
 
             return true
@@ -156,6 +195,23 @@ class QuestService
         }
 
         // ---- private ----
+
+        private fun scheduleTimeout(
+            questKey: String,
+            minutes: Int,
+        ) {
+            val timer = Timer("quest-timeout-$questKey", true)
+            timeoutTimers[questKey] = timer
+            timer.schedule(
+                timerTask {
+                    val quest = activeQuests[questKey]
+                    if (quest != null && quest.state == QuestState.ACTIVE) {
+                        endQuest(quest, EndReason.CANCEL)
+                    }
+                },
+                minutes * 60_000L,
+            )
+        }
 
         private fun createQuest(
             type: QuestType,
@@ -193,7 +249,7 @@ class QuestService
  */
 private class QuestInstance(
     override val type: net.azisaba.simplequest.domain.quest.model.QuestType,
-    playerIds: List<String>,
+    override val playerIds: List<String>,
 ) : DomainQuest {
     private val _playerIds = playerIds.toMutableList()
 

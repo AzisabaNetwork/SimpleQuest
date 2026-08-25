@@ -106,10 +106,12 @@ class QuestManager
                 giver = type.giver,
                 playLimits =
                     net.azisaba.simplequest.domain.quest.model.PlayLimits(
+                        daily = type.playLimits.daily,
                         weekly = type.playLimits.weekly,
                         monthly = type.playLimits.monthly,
                         yearly = type.playLimits.yearly,
                         lifetime = type.playLimits.lifetime,
+                        cooldownMinutes = type.playLimits.cooldownMinutes,
                     ),
                 acceptConditions =
                     net.azisaba.simplequest.domain.quest.model.AcceptConditions(
@@ -121,6 +123,8 @@ class QuestManager
                 maxPlayers = type.maxPlayers,
                 minPlayers = type.minPlayers,
                 deathLimit = type.deathLimit,
+                serverExclusive = type.serverExclusive,
+                timeoutMinutes = type.timeoutMinutes,
                 guides =
                     type.guides.map {
                         net.azisaba.simplequest.domain.quest.model.GameGuide(
