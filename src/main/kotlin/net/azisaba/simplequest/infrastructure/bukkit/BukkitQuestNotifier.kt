@@ -22,6 +22,7 @@ class BukkitQuestNotifier
     @Inject
     constructor(
         private val questPanelGui: QuestPanelGui,
+        private val questDetailGui: QuestDetailGui,
     ) : QuestNotifier {
         override fun showQuestPanel(
             playerId: String,
@@ -29,13 +30,13 @@ class BukkitQuestNotifier
         ) {
             val player = Bukkit.getPlayer(UUID.fromString(playerId)) ?: return
             questPanelGui.show(player, quest)
-            QuestDetailGui.mount(player)
+            questDetailGui.mount(player)
         }
 
         override fun hideQuestPanel(playerId: String) {
             val player = Bukkit.getPlayer(UUID.fromString(playerId)) ?: return
             questPanelGui.hide(player)
-            QuestDetailGui.unmount(player)
+            questDetailGui.unmount(player)
         }
 
         override fun sendMessage(
