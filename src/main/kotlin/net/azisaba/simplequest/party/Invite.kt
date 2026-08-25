@@ -15,12 +15,21 @@ class Invite(
     val id: UUID = UUID.randomUUID()
     var accepted: Boolean = false
         private set
+    var denied: Boolean = false
+        private set
 
     fun accept(currentTick: Long = expiresAtTick + 1): Boolean {
         if (isExpired(currentTick)) return false
-        if (accepted) return false
+        if (accepted || denied) return false
         accepted = true
         party.addMember(target)
+        return true
+    }
+
+    fun deny(currentTick: Long = expiresAtTick + 1): Boolean {
+        if (isExpired(currentTick)) return false
+        if (accepted || denied) return false
+        denied = true
         return true
     }
 
