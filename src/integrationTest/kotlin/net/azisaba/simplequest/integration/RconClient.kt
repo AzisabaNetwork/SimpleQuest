@@ -28,7 +28,9 @@ class RconClient(
     fun connect() {
         socket =
             Socket(host, port).also {
-                it.soTimeout = 5000
+                // Grant/revoke for offline players triggers a blocking name lookup
+                // server-side, which can exceed several seconds.
+                it.soTimeout = 30_000
             }
         input = DataInputStream(socket!!.getInputStream())
         output = DataOutputStream(socket!!.getOutputStream())
