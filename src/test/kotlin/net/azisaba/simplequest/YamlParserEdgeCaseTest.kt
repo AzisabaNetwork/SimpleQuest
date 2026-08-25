@@ -23,9 +23,9 @@ class YamlParserEdgeCaseTest :
                 p["ColorOnly"]!!.title shouldBe "&a&l&n"
             }
 
-            test("json-like values in giver") {
-                val p = parse("JsonGiver:\n  Title: \"Test\"\n  Giver: \"{\\\"name\\\":\\\"NPC\\\"}\"")
-                p["JsonGiver"]!!.giver shouldBe "{\"name\":\"NPC\"}"
+            test("unknown key is ignored gracefully") {
+                val p = parse("UnknownKey:\n  Title: \"Test\"")
+                p.size shouldBe 1
             }
 
             test("newline escape in description") {

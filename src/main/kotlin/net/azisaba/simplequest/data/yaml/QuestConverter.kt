@@ -39,7 +39,6 @@ object QuestConverter {
             description = def.description,
             category = def.category,
             location = location,
-            giver = def.giver,
             playLimits = playLimits,
             acceptConditions = acceptConditions,
             maxPlayers = maxPlayers,

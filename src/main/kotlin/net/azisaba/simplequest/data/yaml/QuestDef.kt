@@ -9,7 +9,6 @@ data class QuestDef(
     @SerialName("Description") val description: List<String> = emptyList(),
     @SerialName("Icon") val icon: String = "STONE",
     @SerialName("Aura") val aura: Boolean = false,
-    @SerialName("Giver") val giver: String? = null,
     @SerialName("Category") val category: String = "lq:general",
     @SerialName("Location") val location: String? = null,
     @SerialName("Options") val options: QuestOptionsDef? = null,

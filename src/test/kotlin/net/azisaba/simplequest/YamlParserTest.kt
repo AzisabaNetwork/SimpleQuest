@@ -43,7 +43,6 @@ class YamlParserTest :
             def.description shouldBe emptyList()
             def.icon shouldBe "STONE"
             def.aura shouldBe false
-            def.giver shouldBe null
             def.category shouldBe "lq:general"
             def.location shouldBe null
             def.options shouldBe null
@@ -63,7 +62,6 @@ WolfSlayer:
   Description:
     - "&7Kill 10 wolves!"
   Icon: "STONE_SWORD:3001"
-  Giver: "&eHunter"
   Category: "lq:general"
   Location: "world,100,64,100"
   Options:
@@ -96,7 +94,6 @@ WolfSlayer:
             def.title shouldBe "&cWolf Slayer"
             def.description shouldBe listOf("&7Kill 10 wolves!")
             def.icon shouldBe "STONE_SWORD:3001"
-            def.giver shouldBe "&eHunter"
             def.category shouldBe "lq:general"
             def.location shouldBe "world,100,64,100"
             def.options?.maxParty shouldBe "1-4"
@@ -265,18 +262,6 @@ SupplyProcurement:
             parsed["AuraItem"]!!.aura shouldBe true
         }
 
-        test("quest with giver") {
-            val parsed =
-                parse(
-                    """
-            WithGiver:
-              Title: "Giver Test"
-              Giver: "&eQuest Master"
-        """,
-                )
-            parsed["WithGiver"]!!.giver shouldBe "&eQuest Master"
-        }
-
         test("quest with PartyMode requirement") {
             val parsed =
                 parse(
@@ -407,13 +392,11 @@ SupplyProcurement:
                     """
                 Unicode:
                   Title: "日本語タイトル"
-                  Giver: "&e村長さん"
                   Description:
                     - "\u3042\u3044\u3046\u3048\u304a"
             """,
                 )
             parsed["Unicode"]!!.title shouldBe "日本語タイトル"
-            parsed["Unicode"]!!.giver shouldBe "&e村長さん"
         }
 
         test("script with multiple commands in one trigger") {
@@ -446,7 +429,6 @@ SupplyProcurement:
                     - "desc"
                   Icon: "STONE:42"
                   Aura: true
-                  Giver: "&eNPC"
                   Category: "lq:daily"
                   Location: "world,1,2,3"
                   Options:
@@ -483,7 +465,6 @@ SupplyProcurement:
             def.title shouldBe "Complete"
             def.icon shouldBe "STONE:42"
             def.aura shouldBe true
-            def.giver shouldBe "&eNPC"
             def.category shouldBe "lq:daily"
             def.location shouldBe "world,1,2,3"
             def.options?.maxParty shouldBe "2-4"
@@ -527,11 +508,9 @@ SupplyProcurement:
                     """
                 SingleQuote:
                   Title: 'Single Quoted Title'
-                  Giver: '&eQuest Master'
             """,
                 )
             parsed["SingleQuote"]!!.title shouldBe "Single Quoted Title"
-            parsed["SingleQuote"]!!.giver shouldBe "&eQuest Master"
         }
 
         test("numeric string values preserved") {
