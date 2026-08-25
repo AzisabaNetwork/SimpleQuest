@@ -49,7 +49,7 @@ SmashAttack:                             # ID が YAML キー
 ## 設計案一覧
 
 | 案 | スタイル | DSL度 | YAML構造度 | 特徴 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **案 A** | MM-DSL 寄り | 強い | 弱い | インライン文字列でアクション/条件を記述 |
 | **案 B** | MM-構造寄り | 弱い | 強い | MM命名に則した YAML ブロック、DSL最小限 |
 | **案 C** | MM-バランス | 適度 | 適度 | 見やすさと MM らしさの妥協点 |
@@ -121,7 +121,7 @@ ForestExploration:                         # ID = YAML キー
 ### 評価
 
 | 項目 | 評価 |
-|---|---|
+| --- | --- |
 | **MM らしさ** | ◎ スキル DSL の雰囲気を強く継承 |
 | **記述効率** | ◎ 一行で多くの情報を詰め込める |
 | **可読性** | △ DSL 記法に慣れが必要。複雑な条件は見づらい |
@@ -217,7 +217,7 @@ ForestExploration:
 ### 評価
 
 | 項目 | 評価 |
-|---|---|
+| --- | --- |
 | **MM らしさ** | ○ Options ブロック、命名規則、構造の雰囲気は MM 風 |
 | **記述効率** | △ やや verbose。ただし明確 |
 | **可読性** | ◎ 何の設定か一目でわかる |
@@ -291,7 +291,7 @@ ForestExploration:
 ### 評価
 
 | 項目 | 評価 |
-|---|---|
+| --- | --- |
 | **MM らしさ** | ◎ 過不足ない MM っぽさ |
 | **記述効率** | ○ 短いものは簡略、複雑なものは構造化 |
 | **可読性** | ○ インラインと構造化の境界が明確 |
@@ -304,7 +304,7 @@ ForestExploration:
 ## 比較表: 同じ設定を3案で書き比べ
 
 | 設定項目 | 案 A (DSL) | 案 B (構造) | 案 C (バランス) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **アイコン** | `IRON_SWORD;cmd:5001;aura` | `Material: IRON_SWORD`<br>`CustomModelData: 5001`<br>`Aura: true` | `"IRON_SWORD:5001"` + `Aura: true` |
 | **アクション** | `mythicitem{give=MMOre;amount=5}` | `Type: MythicItemGive`<br>`Item: MMOre`<br>`Amount: 5` | `MythicItem: MMOre,5` |
 | **完了条件** | `kill_zombie:10` | `KillZombie:`<br>`Amount: 10` | `KillZombie: 10` |
@@ -318,14 +318,14 @@ ForestExploration:
 ### 1. ID 位置
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **YAML キー** | `ForestExploration:` → ファイル名と一致推奨 | A/B/C 全案 |
 | **内部フィールド** | `Id: "lq:forest_exploration"` | 旧来方式 |
 
 ### 2. アイコン記法
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **インライン文字列** | `IRON_SWORD;cmd:5001;aura` | 案 A |
 | **構造化** | `Material: IRON_SWORD` + `CustomModelData: 5001` | 案 B |
 | **ハイブリッド** | `"IRON_SWORD:5001"` + `Aura: true` | 案 C |
@@ -333,7 +333,7 @@ ForestExploration:
 ### 3. アクション記法
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **MM スキル DSL** | `mythicitem{give=MMOre;amount=5}` | 案 A |
 | **構造化 YAML** | `Type: MythicItemGive`, `Item: MMOre`... | 案 B |
 | **簡略 Type:Params** | `MythicItem: MMOre,5` | 案 C |
@@ -341,7 +341,7 @@ ForestExploration:
 ### 4. 完了条件 (Objectives)
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **Map<String, Int>** | `KillZombie: 10` | 案 C (シンプル) |
 | **構造化 (拡張準備)** | `KillZombie: { Amount: 10, Type: MOB_KILL }` | 案 B (将来拡張) |
 | **key:value 文字列** | `"kill_zombie:10"` | 案 A (統一性) |
@@ -349,14 +349,14 @@ ForestExploration:
 ### 5. Options ブロック
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **MM 式 Options** | `Options: { PlayLimits: ..., DeathLimit: ... }` | 案 B, C |
 | **トップレベル直置き** | `PlayLimits: ...` `DeathLimit: ...` | 案 A (旧来互換) |
 
 ### 6. 受注条件名
 
 | 方式 | 例 | 採用案 |
-|---|---|---|
+| --- | --- | --- |
 | **旧来方式** | `requirements:` (objectives と混同しやすい) | 現行 |
 | **MM 命名** | `Requirements:` | A/B/C (明確化) |
 | **AcceptConditions** | `AcceptConditions:` | 構造案 |

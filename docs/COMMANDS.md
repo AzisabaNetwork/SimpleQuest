@@ -26,7 +26,7 @@ cloud (Incendo) + Paper Brigadier を使用して実装。
 ```
 
 - `player`: プレイヤー名（オンライン / オフライン両対応）
-- `questType`: クエストキー（例: `BotQuest`, `@test/party_quest`）
+- `questType`: クエストキー（例: `test/bot_quest`。`@<namespace>/types/` 内のYAMLは `<namespace>/<ファイル名>` 形式のキーで登録される）
 - 既に解放済みのプレイヤーはスキップ（idempotent）
 
 ### progress

@@ -39,7 +39,6 @@ QuestName:
     - "&7説明文2行目"
   Icon: "MATERIAL"                      # 必須、または "MATERIAL:CMD"
   Aura: true                            # 任意（エンチャント光沢）
-  Giver: "&e依頼人"                     # 任意
   Category: "lq:general"                # 必須
   Location: "world,x,y,z"               # 必須
 
@@ -133,20 +132,12 @@ Icon: "PLAYER_HEAD:base64string"
 Aura: true
 ```
 
-### Giver（任意）
-
-クエストの依頼人名。
-
-```yaml
-Giver: "&e村長"
-```
-
 ### Category（必須）
 
 ビルトインカテゴリ:
 
 | キー | 表示名 | 説明 |
-|---|---|---|
+| --- | --- | --- |
 | `lq:general` | General | 一般クエスト |
 | `lq:daily` | Daily | デイリークエスト |
 | `lq:story` | Story | ストーリークエスト |
@@ -179,7 +170,7 @@ Options:
 受注・完了可能回数の周期制限。
 
 | 周期 | リセット |
-|---|---|
+| --- | --- |
 | `Daily` | 毎日 0:00 |
 | `Weekly` | 毎週月曜 0:00 |
 | `Monthly` | 毎月1日 0:00 |
@@ -231,7 +222,7 @@ Objectives:
 ```
 
 | プレフィックス | 意味 | 例 |
-|---|---|---|
+| --- | --- | --- |
 | `Break` | ブロック破壊 | `BreakStone` |
 | `Place` | ブロック設置 | `PlaceDirt` |
 | `Kill` | エンティティ討伐 | `KillZombie` |
@@ -259,7 +250,7 @@ Actions:
 ```
 
 | Type | 説明 | Params | 実装 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Command` | コンソールコマンド | `"コマンド文字列"` | ✅ |
 | `Item` | アイテム付与 | `"material,amount"` | ✅ |
 | `MythicItem` | MythicMobs アイテム | `"ItemName,amount"` | ⚠️ 未実装 |
@@ -431,7 +422,7 @@ mkdir -p plugins/SimpleQuest/@custom/types
 ### よくある間違い
 
 | 問題 | 原因 | 対策 |
-|---|---|---|
+| --- | --- | --- |
 | 読み込まれない | ディレクトリ名に `@` がない | `@namespace` にリネーム |
 | 同上 | インデントがずれている | スペース2個で統一。タブ禁止 |
 | アイコン表示されない | Material 名が間違い | [Paper Javadoc](https://jd.papermc.io/paper/1.21/org/bukkit/Material.html) で確認 |
