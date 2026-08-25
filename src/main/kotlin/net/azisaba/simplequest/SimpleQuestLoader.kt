@@ -9,6 +9,7 @@ import kotlinx.serialization.serializer
 import net.azisaba.simplequest.data.yaml.QuestConverter
 import net.azisaba.simplequest.data.yaml.QuestDef
 import net.azisaba.simplequest.registry.DomainQuestTypes
+import net.azisaba.simplequest.registry.QuestCategories
 import java.io.File
 import java.util.logging.Logger
 
@@ -78,6 +79,15 @@ class SimpleQuestLoader
                 val raw = yaml.decodeFromString(mapSerializer, text)
 
                 raw.forEach { (_, questDef) ->
+                    // Validate category before registering
+                    if (!QuestCategories.isValidCategory(questDef.category)) {
+                        logger.warning(
+                            "Quest '${questDef.title}' in ${file.name}: invalid category '${questDef.category}'. " +
+                                "Must be one of: ${QuestCategories.validCategoryKeys()}",
+                        )
+                        return@forEach
+                    }
+
                     val relativePath = baseDir.toURI().relativize(file.toURI()).path
                     val keyStr = relativePath.substringBeforeLast(".")
                     val fullKey = "$namespace/$keyStr"
