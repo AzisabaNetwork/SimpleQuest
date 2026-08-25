@@ -70,17 +70,29 @@ class RconClient(
         payload: String,
     ) {
         val payloadBytes = payload.toByteArray(Charsets.US_ASCII)
-        val out = output!!
 
-        // length = 10 (id + type + padding) + payload + null terminator
-        val length = 10 + payloadBytes.size
-        writeLittleEndianInt(out, length)
-        writeLittleEndianInt(out, id)
-        writeLittleEndianInt(out, type)
-        out.write(payloadBytes)
-        out.write(0) // null terminator
-        out.write(0) // padding
-        out.flush()
+        // Build the whole packet and send it with a single write call.
+        // The vanilla RCON server reads the packet with a single read() and
+        // silently closes the connection if the packet arrives fragmented
+        // (read returns <= 10 bytes or length != bytesRead - 4).
+        val packet = ByteArray(12 + payloadBytes.size + 2)
+        putLittleEndian(packet, 0, 10 + payloadBytes.size)
+        putLittleEndian(packet, 4, id)
+        putLittleEndian(packet, 8, type)
+        payloadBytes.copyInto(packet, 12)
+        // trailing null terminator + padding are already zero
+        output!!.write(packet)
+    }
+
+    private fun putLittleEndian(
+        b: ByteArray,
+        offset: Int,
+        value: Int,
+    ) {
+        b[offset] = (value and 0xFF).toByte()
+        b[offset + 1] = ((value shr 8) and 0xFF).toByte()
+        b[offset + 2] = ((value shr 16) and 0xFF).toByte()
+        b[offset + 3] = ((value shr 24) and 0xFF).toByte()
     }
 
     private fun readResponse(expectedId: Int): String {
@@ -113,16 +125,6 @@ class RconClient(
     companion object {
         private const val TYPE_LOGIN = 3
         private const val TYPE_COMMAND = 2
-
-        private fun writeLittleEndianInt(
-            out: DataOutputStream,
-            value: Int,
-        ) {
-            out.write(value and 0xFF)
-            out.write((value shr 8) and 0xFF)
-            out.write((value shr 16) and 0xFF)
-            out.write((value shr 24) and 0xFF)
-        }
 
         private fun readLittleEndianInt(inp: DataInputStream): Int {
             val b0 = inp.readUnsignedByte()
