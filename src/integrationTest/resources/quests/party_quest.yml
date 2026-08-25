@@ -5,7 +5,6 @@ PartyQuest:
     - "&7Requires 2-4 players in a party."
   Icon: "DIAMOND"
   Aura: true
-  Giver: "&eTest Party Leader"
   Category: "lq:general"
   Location: "world,0,64,0"
   Options:
