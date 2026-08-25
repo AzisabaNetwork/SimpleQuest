@@ -85,60 +85,76 @@ jobs:
               | .downloads["server:default"].url')
           curl -fsSL -H "User-Agent: $UA" -o paper.jar "$URL"
 
-          dir="servers/master"
-          mkdir -p "$dir/plugins/SimpleQuest"
+          # Download Kunectron (compileOnly dependency, required at runtime for GUIs)
+          curl -fsSL -o kunectron.jar \
+            "https://jitpack.io/com/github/sysnote8main/kunectron/450aeb4/kunectron-450aeb4-all.jar"
 
-          printf 'eula=true\n' > "$dir/eula.txt"
+          setup_server() {
+            local name=$1 port=$2 rcon=$3 config=$4
+            local dir="servers/$name"
+            mkdir -p "$dir/plugins/SimpleQuest"
 
-          printf '%s\n' \
-            "online-mode=false" \
-            "server-port=25565" \
-            "enable-rcon=true" \
-            "rcon.port=25575" \
-            "rcon.password=test" \
-            > "$dir/server.properties"
+            printf 'eula=true\n' > "$dir/eula.txt"
+
+            printf '%s\n' \
+              "online-mode=false" \
+              "server-port=$port" \
+              "enable-rcon=true" \
+              "rcon.port=$rcon" \
+              "rcon.password=test" \
+              > "$dir/server.properties"
+
+            cp build/libs/*.jar "$dir/plugins/"
+            cp kunectron.jar "$dir/plugins/kunectron.jar"
+
+            # Copy server config fixture
+            cp "src/integrationTest/resources/$config" \
+              "$dir/plugins/SimpleQuest/config.yml"
+
+            # Copy test quests (including bot quest)
+            QDIR="$dir/plugins/SimpleQuest/@test/types"
+            mkdir -p "$QDIR"
+            cp src/integrationTest/resources/quests/*.yml "$QDIR/"
+
+            # Copy Paper jar
+            cp paper.jar "$dir/"
+          }
 
           echo "=== build/libs contents ==="
           ls -la build/libs/
-          echo "=== copying ==="
-          cp -v build/libs/*.jar "$dir/plugins/" || echo "COPY FAILED"
-          echo "=== plugins after copy ==="
 
-          # Copy server config fixture (master: write-to-mysql=true)
-          cp src/integrationTest/resources/master-config.yml \
-            "$dir/plugins/SimpleQuest/config.yml"
+          setup_server master   25565 25575 master-config.yml
+          setup_server slave    25566 25576 slave-config.yml
+          setup_server readonly 25567 25577 readonly-config.yml
 
-          # Copy test quests (including bot quest)
-          QDIR="$dir/plugins/SimpleQuest/@test/types"
-          mkdir -p "$QDIR"
-          cp src/integrationTest/resources/quests/test_quest.yml "$QDIR/"
-          cp src/integrationTest/resources/quests/bot_quest.yml "$QDIR/"
-          cp src/integrationTest/resources/quests/party_quest.yml "$QDIR/"
-
-          # Copy Paper jar
-          cp paper.jar "$dir/"
-
-      - name: Start server
+      - name: Start servers
         run: |
-          dir="servers/master"
+          start_server() {
+            local name=$1
+            local dir="servers/$name"
 
-          cd "$dir"
-          java -Xmx1G -jar paper.jar --nogui &
-          echo $! > pid
-          cd "$OLDPWD"
+            cd "$dir"
+            java -Xmx1G -jar paper.jar --nogui &
+            echo $! > pid
+            cd "$OLDPWD"
 
-          # Wait for "Done" via tail -f on Paper's actual log file
-          timeout 240 bash -c "
-            until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done ('; do
-              sleep 2
-            done
-          " || {
-            echo 'Server failed to start! Last 50 lines:'
-            tail -50 $dir/logs/latest.log
-            exit 1
+            # Wait for "Done" via tail -f on Paper's actual log file
+            timeout 240 bash -c "
+              until tail -f $dir/logs/latest.log 2>/dev/null | grep -q 'Done ('; do
+                sleep 2
+              done
+            " || {
+              echo "$name failed to start! Last 50 lines:"
+              tail -50 $dir/logs/latest.log
+              exit 1
+            }
+            echo "$name started"
           }
 
-          echo 'Server started on port 25565'
+          # Master first (pushes quest definitions to MySQL), then the rest
+          start_server master
+          start_server slave
+          start_server readonly
 
       - name: Run bot quest scenario
         run: |
@@ -174,15 +190,17 @@ jobs:
           echo "=== running kotest integration tests ==="
           ./gradlew integrationTestTask --no-daemon
 
-      - name: Stop server
+      - name: Stop servers
         if: always()
         run: |
-          dir="servers/master"
-          if [ -f "$dir/pid" ]; then
-            kill $(cat "$dir/pid") 2>/dev/null || true
-            echo "Server stopped"
-          fi
-          cp "$dir/logs/latest.log" artifacts/latest.log || true
+          for name in master slave readonly; do
+            dir="servers/$name"
+            if [ -f "$dir/pid" ]; then
+              kill $(cat "$dir/pid") 2>/dev/null || true
+              echo "$name stopped"
+            fi
+          done
+          cp servers/master/logs/latest.log artifacts/latest.log || true
 
       - name: Upload artifacts
         if: always()
