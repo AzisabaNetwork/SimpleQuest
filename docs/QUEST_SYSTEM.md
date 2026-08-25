@@ -19,7 +19,6 @@ data class QuestType(
     val description: List<String> = emptyList(),
     val category: String = "lq:general",
     val location: Location? = null,
-    val giver: String? = null,
     val playLimits: PlayLimits = PlayLimits(),
     val acceptConditions: AcceptConditions = AcceptConditions(),
     val maxPlayers: Int? = null,
@@ -35,12 +34,11 @@ data class QuestType(
 ### YAML ↔ コード マッピング
 
 | YAML キー | Kotlin フィールド | 形式 |
-|---|---|---|
+| --- | --- | --- |
 | `Title` | `title` | String |
 | `Description` | `description` | List\<String\> |
 | `Icon` | `icon` | `"MATERIAL"` または `"MATERIAL:CMD"` |
 | `Aura` | `icon.aura` | Boolean |
-| `Giver` | `giver` | String? |
 | `Category` | `category` | `"lq:general"` など |
 | `Location` | `location` | `"world,x,y,z[,yaw,pitch]"` |
 | `Options.MaxParty` | `maxPlayers` / `minPlayers` | `"min-max"` または `"max"` |
@@ -65,7 +63,6 @@ QuestName:
     - "&7説明文"
   Icon: "DIAMOND:5001"
   Aura: true
-  Giver: "&e依頼人"
   Category: "lq:general"
   Location: "world,100,64,200"
 
@@ -116,7 +113,7 @@ QuestName:
 各周期の制限回数。
 
 | 周期 | 説明 | リセットタイミング | 実装状況 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Daily` | 日間制限 | 毎日 0:00 | ✅ |
 | `Weekly` | 週間制限 | 毎週月曜 0:00 | ✅ |
 | `Monthly` | 月間制限 | 毎月1日 0:00 | ✅ |
@@ -130,7 +127,7 @@ QuestName:
 `Requirements` セクションで定義。
 
 | 条件 | YAML | 型 | 実装 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | PvE レベル | `Requirements.PvELevel` | Int? | ✅ (チェックのみ) |
 | 所持金 | `Requirements.Money` | Double? | ✅ (チェックのみ) |
 | パーティ必須 | `Requirements.PartyMode` | Boolean | ✅ |
@@ -185,7 +182,7 @@ class Progresses(requirements: Map<String, QuestRequirement>) {
 ### アクション種別
 
 | Type | ActionType | 説明 | 実装 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Command` | `COMMAND` | コンソールコマンド実行 | ✅ |
 | `Item` | `ITEM_GIVE` | Minecraft アイテム付与 | ✅ |
 | `MythicItem` | `MYTHIC_ITEM_GIVE` | MythicMobs アイテム付与 | ⚠️ 未実装 |
@@ -194,7 +191,7 @@ class Progresses(requirements: Map<String, QuestRequirement>) {
 ### トリガータイミング
 
 | トリガー | 実行タイミング |
-|---|---|
+| --- | --- |
 | `OnFirstComplete` | 各プレイヤーが初めてクエストをクリアした時 |
 | `OnComplete` | クエストクリアのたび毎回 |
 
@@ -209,7 +206,7 @@ class Progresses(requirements: Map<String, QuestRequirement>) {
 ### EndReason
 
 | 値 | 意味 |
-|---|---|
+| --- | --- |
 | `COMPLETE` | 全要件達成 |
 | `CANCEL` | プレイヤーによる中断 |
 | `DEATH_LIMIT` | 死亡回数上限超過 |

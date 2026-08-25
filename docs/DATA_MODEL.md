@@ -61,7 +61,6 @@ data class QuestType(
     val description: List<String> = emptyList(),
     val category: String = "lq:general",
     val location: Location? = null,
-    val giver: String? = null,
     val playLimits: PlayLimits = PlayLimits(),
     val acceptConditions: AcceptConditions = AcceptConditions(),
     val maxPlayers: Int? = null,
@@ -77,12 +76,11 @@ data class QuestType(
 ### YAML ↔ コード マッピング
 
 | YAML キー | Kotlin フィールド | 形式 |
-|---|---|---|
+| --- | --- | --- |
 | `Title` | `title` | String |
 | `Description` | `description` | List\<String\> |
 | `Icon` | `icon` | `"MATERIAL"` または `"MATERIAL:CMD"` |
 | `Aura` | `icon.aura` | Boolean |
-| `Giver` | `giver` | String? |
 | `Category` | `category` | `"lq:general"` など |
 | `Location` | `location` | `"world,x,y,z[,yaw,pitch]"` |
 | `Options.MaxParty` | `maxPlayers` / `minPlayers` | `"min-max"` または `"max"` |
@@ -229,7 +227,7 @@ Flyway + Exposed で管理。全テーブルは `V1__InitialSetup` マイグレ�
 ### テーブル一覧
 
 | テーブル | 用途 |
-|---|---|
+| --- | --- |
 | `quest_progress` | プレイヤーのクエスト進捗 |
 | `quest_completions` | クエスト完了履歴 (プレイ制限計算用) |
 | `player_quest_types` | プレイヤーの解放済み QuestType |
