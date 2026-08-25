@@ -166,6 +166,15 @@ object QuestConverter {
                 Action(type = ActionType.PVELEVEL_EXP, amount = entry.params.toIntOrNull() ?: 0)
             }
 
+            "RandomItem" -> {
+                val candidates =
+                    entry.params
+                        .split("|")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                Action(type = ActionType.RANDOM_ITEM, candidates = candidates, amount = 1)
+            }
+
             else -> {
                 Action(type = ActionType.COMMAND, command = entry.params)
             }

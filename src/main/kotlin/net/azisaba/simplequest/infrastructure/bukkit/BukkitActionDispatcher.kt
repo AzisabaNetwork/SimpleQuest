@@ -29,6 +29,7 @@ class BukkitActionDispatcher
             when (action.type) {
                 ActionType.COMMAND -> dispatchCommand(action, player)
                 ActionType.ITEM_GIVE -> giveItem(action, player)
+                ActionType.RANDOM_ITEM -> giveRandomItem(action, player)
                 ActionType.MYTHIC_ITEM_GIVE -> logger.warning("MythicItemGive not implemented: ${action.item}")
                 ActionType.PVELEVEL_EXP -> logger.warning("PvELevelExp not implemented: ${action.amount}")
             }
@@ -57,6 +58,21 @@ class BukkitActionDispatcher
         ) {
             val material = Material.matchMaterial(action.material ?: return) ?: return
             val item = ItemStack(material, (action.amount ?: 1).coerceAtLeast(1))
+            player.inventory.addItem(item).values.forEach { leftover ->
+                player.world.dropItem(player.location, leftover)
+            }
+        }
+
+        private fun giveRandomItem(
+            action: Action,
+            player: Player,
+        ) {
+            val candidates = action.candidates.ifEmpty { return }
+            val picked = candidates.random()
+            val parts = picked.split(",", limit = 2)
+            val material = Material.matchMaterial(parts[0].trim()) ?: return
+            val amount = parts.getOrNull(1)?.trim()?.toIntOrNull() ?: 1
+            val item = ItemStack(material, amount.coerceAtLeast(1))
             player.inventory.addItem(item).values.forEach { leftover ->
                 player.world.dropItem(player.location, leftover)
             }
