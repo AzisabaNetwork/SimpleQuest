@@ -56,7 +56,7 @@ class QuestService
             playerIds.forEach { playerQuests[it] = type.key }
             quest.start()
 
-            playerIds.forEach { questNotifier.showQuestPanel(it, type.key) }
+            playerIds.forEach { questNotifier.showQuestPanel(it, quest) }
             return QuestResult.Success(quest)
         }
 
@@ -193,7 +193,7 @@ class QuestService
  */
 private class QuestInstance(
     override val type: net.azisaba.simplequest.domain.quest.model.QuestType,
-    playerIds: List<String>,
+    override val playerIds: List<String>,
 ) : DomainQuest {
     private val _playerIds = playerIds.toMutableList()
 
