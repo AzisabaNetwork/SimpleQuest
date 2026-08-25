@@ -44,17 +44,17 @@ class MultiplayerIntegrationTest :
 
             test("grant quest to multiple players") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest grant $name @test/party_quest")
+                    serverDef.executeCommand("simplequest grant $name test/party_quest")
                 }
                 // Re-grant should be idempotent
-                val result = serverDef.executeCommand("simplequest grant ${players[0]} @test/party_quest")
+                val result = serverDef.executeCommand("simplequest grant ${players[0]} test/party_quest")
                 val ok = result.isEmpty() || result.contains("Granted", ignoreCase = true)
                 ok shouldBe true
             }
 
             test("revoke quest from all players") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest revoke $name @test/party_quest")
+                    serverDef.executeCommand("simplequest revoke $name test/party_quest")
                 }
                 // No exceptions = success
             }
@@ -65,7 +65,7 @@ class MultiplayerIntegrationTest :
             test("grant BotQuest to all players and verify DB") {
                 // Grant
                 for (name in players) {
-                    serverDef.executeCommand("simplequest grant $name @test/bot_quest")
+                    serverDef.executeCommand("simplequest grant $name test/bot_quest")
                 }
                 // Verify via MariaDB
                 try {
@@ -92,7 +92,7 @@ class MultiplayerIntegrationTest :
 
             test("cleanup revoke after DB test") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest revoke $name @test/bot_quest")
+                    serverDef.executeCommand("simplequest revoke $name test/bot_quest")
                 }
             }
         }
