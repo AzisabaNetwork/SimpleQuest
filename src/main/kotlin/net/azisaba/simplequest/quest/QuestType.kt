@@ -20,6 +20,8 @@ class QuestType(
     val maxPlayers: Int?,
     val minPlayers: Int?,
     val deathLimit: Int?,
+    val serverExclusive: Boolean = false,
+    val timeoutMinutes: Int? = null,
     val guides: List<GameGuide>,
     val requirements: Map<String, QuestRequirement>,
     val actions: ActionSet?,
