@@ -36,7 +36,7 @@ class MultiplayerIntegrationTest :
         context("party quest definition") {
 
             test("PartyQuest exists in MariaDB") {
-                ServerAssertions.assertQuestDefinitionExists("PartyQuest")
+                ServerAssertions.assertQuestDefinitionExists("test/party_quest")
             }
         }
 
@@ -44,17 +44,17 @@ class MultiplayerIntegrationTest :
 
             test("grant quest to multiple players") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest grant $name PartyQuest")
+                    serverDef.executeCommand("simplequest grant $name @test/party_quest")
                 }
                 // Re-grant should be idempotent
-                val result = serverDef.executeCommand("simplequest grant ${players[0]} PartyQuest")
+                val result = serverDef.executeCommand("simplequest grant ${players[0]} @test/party_quest")
                 val ok = result.isEmpty() || result.contains("Granted", ignoreCase = true)
                 ok shouldBe true
             }
 
             test("revoke quest from all players") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest revoke $name PartyQuest")
+                    serverDef.executeCommand("simplequest revoke $name @test/party_quest")
                 }
                 // No exceptions = success
             }
@@ -65,7 +65,7 @@ class MultiplayerIntegrationTest :
             test("grant BotQuest to all players and verify DB") {
                 // Grant
                 for (name in players) {
-                    serverDef.executeCommand("simplequest grant $name BotQuest")
+                    serverDef.executeCommand("simplequest grant $name @test/bot_quest")
                 }
                 // Verify via MariaDB
                 try {
@@ -75,11 +75,11 @@ class MultiplayerIntegrationTest :
                             .prepareStatement(
                                 "SELECT COUNT(*) FROM player_quest_types WHERE quest_key = ?",
                             ).use { ps ->
-                                ps.setString(1, "BotQuest")
+                                ps.setString(1, "test/bot_quest")
                                 val rs = ps.executeQuery()
                                 rs.next()
                                 val count = rs.getInt(1)
-                                println("player_quest_types count for BotQuest: $count")
+                                println("player_quest_types count for test/bot_quest: $count")
                                 // At least 3 (one per player); may include previous test runs
                                 count shouldBe 3
                             }
@@ -92,7 +92,7 @@ class MultiplayerIntegrationTest :
 
             test("cleanup revoke after DB test") {
                 for (name in players) {
-                    serverDef.executeCommand("simplequest revoke $name BotQuest")
+                    serverDef.executeCommand("simplequest revoke $name @test/bot_quest")
                 }
             }
         }

@@ -34,15 +34,15 @@ class QuestLifecycleIntegrationTest :
             }
 
             test("test quest 'TestQuest' exists") {
-                ServerAssertions.assertQuestDefinitionExists("TestQuest")
+                ServerAssertions.assertQuestDefinitionExists("test/test_quest")
             }
 
             test("bot quest 'BotQuest' exists") {
-                ServerAssertions.assertQuestDefinitionExists("BotQuest")
+                ServerAssertions.assertQuestDefinitionExists("test/bot_quest")
             }
 
             test("party quest 'PartyQuest' exists") {
-                ServerAssertions.assertQuestDefinitionExists("PartyQuest")
+                ServerAssertions.assertQuestDefinitionExists("test/party_quest")
             }
 
             test("no conflict flags") {
@@ -53,15 +53,15 @@ class QuestLifecycleIntegrationTest :
         context("quest grant via RCON") {
 
             test("grant BotQuest succeeds") {
-                val result = serverDef.executeCommand("simplequest grant BotTester BotQuest")
+                val result = serverDef.executeCommand("simplequest grant BotTester @test/bot_quest")
                 val ok = result.isEmpty() || result.contains("Granted", ignoreCase = true)
                 if (!ok) println("grant result: '$result'")
                 ok shouldBe true
             }
 
             test("revoke and re-grant is idempotent") {
-                serverDef.executeCommand("simplequest revoke BotTester BotQuest")
-                val result = serverDef.executeCommand("simplequest grant BotTester BotQuest")
+                serverDef.executeCommand("simplequest revoke BotTester @test/bot_quest")
+                val result = serverDef.executeCommand("simplequest grant BotTester @test/bot_quest")
                 val ok = result.isEmpty() || result.contains("Granted", ignoreCase = true)
                 ok shouldBe true
             }

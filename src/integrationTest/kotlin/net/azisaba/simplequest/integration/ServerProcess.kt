@@ -41,7 +41,13 @@ class ServerProcess(
 
     fun executeCommand(command: String): String {
         val client = rcon ?: throw IllegalStateException("RCON not connected")
-        return client.executeCommand(command)
+        return try {
+            client.executeCommand(command)
+        } catch (e: java.io.IOException) {
+            // Connection may have been dropped between commands; reconnect once and retry.
+            connectRcon()
+            (rcon ?: throw e).executeCommand(command)
+        }
     }
 
     fun logContains(pattern: Regex): Boolean {
