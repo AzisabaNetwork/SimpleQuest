@@ -19,8 +19,8 @@ import { createBot, type Bot } from "mineflayer";
 
 // Window type from mineflayer internals (prismarine-windows)
 interface BotWindow {
-  title: unknown;
-  slots: Record<number, unknown>;
+	title: unknown;
+	slots: Record<number, unknown>;
 }
 
 // ---- Types ----
@@ -94,16 +94,39 @@ async function connectBot(): Promise<Bot> {
 
 // ---- GUI helpers ----
 
+/** Normalizes a Minecraft chat component (string | {type,value} | {text,...} | array) to plain text. */
+function componentToText(value: unknown): string {
+	if (value == null) return "";
+	if (typeof value === "string") return value;
+	if (Array.isArray(value)) return value.map(componentToText).join("");
+	if (typeof value === "object") {
+		const obj = value as Record<string, unknown>;
+		let text = "";
+		if (typeof obj.text === "string") text += obj.text;
+		if (typeof obj.value === "string") text += obj.value;
+		if (obj.extra != null || obj.with != null) {
+			text += componentToText(obj.extra ?? obj.with);
+		}
+		return text;
+	}
+	return String(value);
+}
+
 async function waitForWindow(bot: Bot, timeoutMs = 15000): Promise<WindowInfo> {
 	return new Promise((resolve, reject) => {
 		const timeout = setTimeout(() => {
 			reject(new Error(`GUI window did not open within ${timeoutMs}ms`));
 		}, timeoutMs);
 
-		bot.once("windowOpen", (window) => {
+		bot.once("windowOpen", async (window) => {
 			clearTimeout(timeout);
+			// Kunectron applies elements right after opening the inventory,
+			// so wait for the slot-update packets before snapshotting.
+			await new Promise((r) => setTimeout(r, 1000));
+
+			const current = bot.currentWindow ?? window;
 			const slots: Record<number, WindowSlotItem> = {};
-			for (const [slotIdx, item] of Object.entries(window.slots)) {
+			for (const [slotIdx, item] of Object.entries(current.slots)) {
 				const idx = parseInt(slotIdx, 10);
 				if (item != null && typeof item === "object" && "name" in item) {
 					const typed = item as {
@@ -116,18 +139,13 @@ async function waitForWindow(bot: Bot, timeoutMs = 15000): Promise<WindowInfo> {
 						name: typed.name,
 						count: typed.count,
 						displayName:
-							typed.displayName == null
-								? undefined
-								: String(typed.displayName),
+							typed.displayName == null ? undefined : String(typed.displayName),
 						nbt: typed.nbt,
 					};
 				}
 			}
-			const title = String(window.title ?? "");
-			log(
-				"GUI",
-				`Opened "${title}" (${Object.keys(slots).length} items)`,
-			);
+			const title = componentToText(window.title ?? "");
+			log("GUI", `Opened "${title}" (${Object.keys(slots).length} items)`);
 
 			// Log all items
 			for (const [slot, item] of Object.entries(slots)) {
@@ -192,10 +210,7 @@ function findNearbyBlock(
  * Attempts to break one block of the given type.
  * Returns true if successful.
  */
-async function breakOneBlock(
-	bot: Bot,
-	blockName: string,
-): Promise<boolean> {
+async function breakOneBlock(bot: Bot, blockName: string): Promise<boolean> {
 	const pos = findNearbyBlock(bot, blockName);
 	if (!pos) {
 		log("BREAK", `No ${blockName} found nearby`);
@@ -213,7 +228,10 @@ async function breakOneBlock(
 
 	// Check if we can harvest with current tool
 	if (!bot.canDigBlock(block)) {
-		log("BREAK", `Cannot break ${block.name} at ${pos.x},${pos.y},${pos.z} — need tool?`);
+		log(
+			"BREAK",
+			`Cannot break ${block.name} at ${pos.x},${pos.y},${pos.z} — need tool?`,
+		);
 		return false;
 	}
 
@@ -324,16 +342,20 @@ async function runQuestScenario(): Promise<QuestScenarioResult> {
 			result.questItems.push(name);
 		}
 
-		log("STEP", `Quest GUI has ${window.slotCount} items: ${result.questItems.join(", ")}`);
+		log(
+			"STEP",
+			`Quest GUI has ${window.slotCount} items: ${result.questItems.join(", ")}`,
+		);
 
 		// ----- Step 2: Try to click the first quest item -----
 		if (window.slotCount > 0) {
 			log("STEP", "2. Clicking first quest item...");
 			// Find the first slot with actual content (skip frame/decoration slots)
-			const firstItemSlot = Object.keys(window.slots)
-				.map(Number)
-				.sort((a, b) => a - b)
-				.find((s) => window.slots[s] != null) ?? 0;
+			const firstItemSlot =
+				Object.keys(window.slots)
+					.map(Number)
+					.sort((a, b) => a - b)
+					.find((s) => window.slots[s] != null) ?? 0;
 
 			// Need to reference the actual window object from mineflayer
 			// We use bot.currentWindow or bot.window

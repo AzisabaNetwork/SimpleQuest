@@ -93,13 +93,36 @@ function sleep(ms: number): Promise<void> {
 
 // ---- GUI helpers ----
 
+/** Normalizes a Minecraft chat component (string | {type,value} | {text,...} | array) to plain text. */
+function componentToText(value: unknown): string {
+    if (value == null) return "";
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return value.map(componentToText).join("");
+    if (typeof value === "object") {
+        const obj = value as Record<string, unknown>;
+        let text = "";
+        if (typeof obj.text === "string") text += obj.text;
+        if (typeof obj.value === "string") text += obj.value;
+        if (obj.extra != null || obj.with != null) {
+            text += componentToText(obj.extra ?? obj.with);
+        }
+        return text;
+    }
+    return String(value);
+}
+
 async function waitForWindow(bot: Bot, timeoutMs = 10000): Promise<WindowInfo> {
     return new Promise((resolve, reject) => {
         const t = setTimeout(() => reject(new Error("Window timeout")), timeoutMs);
-        bot.once("windowOpen", (window: any) => {
+        bot.once("windowOpen", async (window: any) => {
             clearTimeout(t);
+            // Kunectron applies elements right after opening the inventory,
+            // so wait for the slot-update packets before snapshotting.
+            await new Promise((r) => setTimeout(r, 1000));
+
+            const current = bot.currentWindow ?? window;
             const slots: Record<number, WindowSlotItem> = {};
-            for (const [s, item] of Object.entries(window.slots)) {
+            for (const [s, item] of Object.entries(current.slots)) {
                 const idx = parseInt(s, 10);
                 if (item && typeof item === "object" && "name" in item) {
                     const typed = item as any;
@@ -110,7 +133,7 @@ async function waitForWindow(bot: Bot, timeoutMs = 10000): Promise<WindowInfo> {
                     };
                 }
             }
-            resolve({ title: String(window.title ?? ""), slotCount: Object.keys(slots).length, slots });
+            resolve({ title: componentToText(window.title ?? ""), slotCount: Object.keys(slots).length, slots });
         });
     });
 }
