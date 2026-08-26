@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/AzisabaNetwork/SimpleQuest/compare/v1.0.1...v1.0.2) (2026-08-26)
+
+
+### Bug Fixes
+
+* add kunectron 1.21.11 adapter support and fix bot GUI verification ([f7d87d2](https://github.com/AzisabaNetwork/SimpleQuest/commit/f7d87d2faa6d269b9093afcb09371ca43a5a9360))
+* kunectron を v1_21_11 adapter 対応版に更新し bot テストを修正 ([4691a43](https://github.com/AzisabaNetwork/SimpleQuest/commit/4691a4327e75bd57f00a793dc6193f20800419fc)), closes [#44](https://github.com/AzisabaNetwork/SimpleQuest/issues/44)
+
 ## [1.0.1](https://github.com/AzisabaNetwork/SimpleQuest/compare/v1.0.0...v1.0.1) (2026-08-25)
 
 
