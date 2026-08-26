@@ -19,7 +19,7 @@ mockbukkit = "3.133.2"
 kotest = "6.2.2"
 h2 = "2.2.224"
 adventure = "4.18.0"
-kunectron = "450aeb4"
+kunectron = "51a53ce04100a2409f3c23ddad4c244dd35be72a"
 cloud = "2.0.0-beta.10"
 
 [libraries]

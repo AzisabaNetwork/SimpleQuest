@@ -29,6 +29,24 @@ const SERVERS: ServerConfig[] = [
 	{ label: "readonly", port: 25567 },
 ];
 
+/** Normalizes a Minecraft chat component (string | {type,value} | {text,...} | array) to plain text. */
+function componentToText(value: unknown): string {
+	if (value == null) return "";
+	if (typeof value === "string") return value;
+	if (Array.isArray(value)) return value.map(componentToText).join("");
+	if (typeof value === "object") {
+		const obj = value as Record<string, unknown>;
+		let text = "";
+		if (typeof obj.text === "string") text += obj.text;
+		if (typeof obj.value === "string") text += obj.value;
+		if (obj.extra != null || obj.with != null) {
+			text += componentToText(obj.extra ?? obj.with);
+		}
+		return text;
+	}
+	return String(value);
+}
+
 async function connectBot(config: ServerConfig): Promise<Bot> {
 	return new Promise<Bot>((resolve, reject) => {
 		const bot = createBot({
@@ -62,10 +80,15 @@ async function waitForWindow(bot: Bot, label: string): Promise<WindowInfo> {
 			reject(new Error(`[${label}] GUI window did not open within 10s`));
 		}, 10000);
 
-		bot.once("windowOpen", (window) => {
+		bot.once("windowOpen", async (window) => {
 			clearTimeout(timeout);
+			// Kunectron applies elements right after opening the inventory,
+			// so wait a moment for the slot-update packets to arrive.
+			await new Promise((r) => setTimeout(r, 1000));
+
+			const current = bot.currentWindow ?? window;
 			const slots: Record<string, WindowSlotItem> = {};
-			for (const [slot, item] of Object.entries(window.slots)) {
+			for (const [slot, item] of Object.entries(current.slots)) {
 				if (item != null && typeof item === "object" && "name" in item) {
 					const typed = item as {
 						name: string;
@@ -80,7 +103,7 @@ async function waitForWindow(bot: Bot, label: string): Promise<WindowInfo> {
 					};
 				}
 			}
-			const title = String(window.title ?? "");
+			const title = componentToText(window.title ?? "");
 			console.log(
 				`[${label}] GUI "${title}" opened (` +
 					`${Object.keys(slots).length} items)`,

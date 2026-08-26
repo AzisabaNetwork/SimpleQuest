@@ -87,7 +87,7 @@ jobs:
 
           # Download Kunectron (compileOnly dependency, required at runtime for GUIs)
           curl -fsSL -o kunectron.jar \
-            "https://jitpack.io/com/github/sysnote8main/kunectron/450aeb4/kunectron-450aeb4-all.jar"
+            "https://jitpack.io/com/github/sysnote8main/kunectron/51a53ce04100a2409f3c23ddad4c244dd35be72a/kunectron-51a53ce04100a2409f3c23ddad4c244dd35be72a-all.jar"
 
           setup_server() {
             local name=$1 port=$2 rcon=$3 config=$4
